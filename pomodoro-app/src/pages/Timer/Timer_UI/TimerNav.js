@@ -35,19 +35,19 @@ const TimerNav = () => {
     }
 
     return (
-        <Nav variant='pills' className='timer-pill  pill justify-content-around align-items-center' id='timer-nav' defaultActiveKey={1} onSelect={handleSelect}>
+        <Nav variant='pills' className='timer-pill pill justify-content-sm-around flex-nowrap align-items-center' id='timer-nav' defaultActiveKey={1} onSelect={handleSelect}>
             <Nav.Item>
-                <Nav.Link eventKey='1' className='text-white rounded-pill py-1 px-5'>
+                <Nav.Link eventKey='1' className='text-white rounded-pill py-1 px-4'>
                     Timer
                 </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-                <Nav.Link eventKey='2' className='text-white rounded-pill py-1 px-5'>
+                <Nav.Link eventKey='2' className='text-white rounded-pill py-1 px-4'>
                     Short Break
                 </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-                <Nav.Link eventKey='3' className='text-white rounded-pill py-1 px-5'>
+                <Nav.Link eventKey='3' className='text-white rounded-pill py-1 px-4'>
                     Long Break
                 </Nav.Link>
             </Nav.Item>

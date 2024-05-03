@@ -1,9 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors  =require('cors');
+const session = require('express-session');
+const passport = require('passport');
 const config = require('./config');
-const TaskTracker = require('./Model/timerModel');
+const route = require('./Routes/route');
 const PORT = config.server.port;
+require('./middlewares/passport');
+
 
 const app = express();
 
@@ -14,70 +18,27 @@ const db = mongoose.connect(mongoUrl);
 // middlewares
 app.use(express.json());
 app.use(cors({
-    method: "GET, POST, PUT, PATCH, DELETE"
+    origin: config.urls.baseUrl,
+    method: 'GET, POST, PUT, PATCH, DELETE',
+    headers: "x-access-token, Content-Type, Accept, Access-Control-Allow-Credentials",
+    credentials: true
 }));
 
 
-app.post('/user-tasks', async(req, res) => {
-    const existingUser = await TaskTracker.findOne({"userData.email": req.body.userData.email})
-    var payload = {
-        userData: req.body.userData,
-        userTasks: [{
-            date: req.body.date,
-            isFinished: req.body.isFinished,
-            tasks: [...req.body.userTasks]
-        }]
-    }
+// session middleware
+app.use(session({
+    secret: config.session.secret,
+    resave: false,
+    saveUninitialized: false,
+}));
 
-    const filter = {'userData.email': {$in: [req.body.userData.email]}}
-    const options = {new: true, upsert: true}
+// passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
-    // to add new user
-    if(!existingUser) {
-        const doc = await TaskTracker.create(payload)
-        doc.save()
-    }
-    else {
-        // if it is old-date?
-        const oldT = existingUser.userTasks.findIndex(t => t.date === req.body.date)
-        // if new date
-        if(oldT === -1) {
-            const oldTask = existingUser.userTasks.map(t => t)
-            const newTask = {
-                date: req.body.date,
-                isFinished: req.body.isFinished,
-                tasks: [...req.body.userTasks]
-            }
-            payload = {
-                userTasks: [...oldTask, newTask]
-            }
-            // retain old task and add new task
-            const doc = await TaskTracker.findOneAndUpdate(filter, payload, options)
-            doc.save()
-        } else {
-            // if same date or date is found
-            const targetDate = req.body.date.split(' ')[0]
-            // replace old date tasks...
-            const doc = await TaskTracker.findByIdAndUpdate(
-                {'userTasks.date': targetDate},
-                {$set: {'userTasks.$.tasks': req.body.userTasks}},
-                {new: true}
-            )
-            doc.save()
-        }
-    }
+// handlers or routes
+app.use('/', route)
 
-    return res.send('Submitted');
-})
-
-app.post('/tasks', async(req, res) => {
-    const existingUser = await TaskTracker.findOne({"userData.email": req.body.email})
-    if(existingUser) {
-        return res.send(existingUser) 
-    } else {
-        // logger.error('Tasklist did not sent to client')
-    }
-})
 
 if(db) {
     app.listen(PORT, (err, client) => {

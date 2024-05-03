@@ -2,22 +2,30 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
-import { jsPDF } from 'jspdf';
+import html2pdf from 'html2pdf.js';
 
-const TList = ({show, setShow, list}) => {
+const TList = ({user, show, setShow, list}) => {
     const handleClose = () => setShow(false);
 
     const downloadbtn = () => {
         const tb = document.getElementById('tableList');
-        var doc = new jsPDF('p', 'pt', 'a4');
-        doc.html(tb, {
-            callback: function(doc) {
-                doc.save('focus_report.pdf');
+        var options = {
+            filename: 'pomodoro_reports.pdf',
+            margin: [10, 10, 10, 10],
+            image: {
+                type: 'png',
+                quality: 0.98
             },
-            margin: [20, 40, 20, 40],
-            x: 32,
-            y: 32
-        });
+            jsPDF: {
+                orientation: 'potrait',
+                unit: 'pt',
+                format: 'a4'
+            },
+            html2canvas: {
+                scale: 2
+            }
+        }
+        html2pdf().set(options).from(tb).save()
     }
 
     return (
@@ -26,6 +34,9 @@ const TList = ({show, setShow, list}) => {
                 <Modal.Title>Your tasks list</Modal.Title>
                 <Button variant='none' className='mx-5 btn-outline-primary' onClick={downloadbtn}>Download</Button>
             </Modal.Header>
+
+            {!user && <p className='text-secondary text-center fs-4 fw-semibold py-2'>! Please login to view your reports</p>}
+
             <Modal.Body id='tableList'>
                 <h4 className='text-center text-decoration-underline mb-4'>Focus Report</h4>
                 <Table striped bordered responsive>

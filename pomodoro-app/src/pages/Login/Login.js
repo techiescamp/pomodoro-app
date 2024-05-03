@@ -19,7 +19,7 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post("http://localhost:5000/user/login", userLogin)
+        axios.post("http://localhost:7000/user/login", userLogin)
             .then(res => {
                 setStatus(res.data);
                 sessionStorage.setItem('token', JSON.stringify(res.data));
@@ -35,7 +35,7 @@ const Login = () => {
     }
 
     const user = (usertoken) => {
-        axios.post("http://localhost:5000/user/userInfo", usertoken, {
+        axios.post("http://localhost:7000/user/userInfo", usertoken, {
             headers: {
                 "x-access-token": usertoken.token,
             }
@@ -52,7 +52,7 @@ const Login = () => {
     }
 
     const loginGoogle = () => {
-        window.open("http://localhost:5000/auth/google", "_self")
+        window.open("http://localhost:7000/auth/google", "_self")
     }
 
     const inlineStyle = {

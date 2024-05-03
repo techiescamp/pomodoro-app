@@ -16,7 +16,7 @@ const Timer = () => {
     const [count, setCount] = useState(0);
     // const [isAllChecked, setIsAllChecked] = useState(false);
     const [finish, setFinish] = useState([]);
-    const [bg, setBg] = useState('#D24545');
+    const [bg, setBg] = useState('#b62525');
 
     const handleAddTask = () => {
         let taskform = document.getElementById('taskform');

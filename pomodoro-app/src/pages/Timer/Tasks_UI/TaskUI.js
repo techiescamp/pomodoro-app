@@ -22,7 +22,7 @@ const TaskUI = () => {
         let taskform = document.getElementById('taskform');
         taskform.style.display = 'block';
         const editData = todo.filter(t => t.id === id)
-        if (editData) {
+        if(editData) {
             setForm({
                 ...form,
                 id: editData[0].id,

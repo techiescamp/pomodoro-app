@@ -5,32 +5,24 @@ import Form from 'react-bootstrap/Form';
 import '../Timer.css';
 
 const TaskList = ({ todo, setTodo, handleEdit }) => {
-    let tododata =  sessionStorage.getItem('todo') ? JSON.parse(sessionStorage.getItem('todo')) : null;
-    const [to, setTo] = useState(null);
-
-    useEffect(() => {
-        setTo(tododata)
-    },[todo])
-
     const handleChecked = (id) => {
-        const updatedCheck = to.map(t => t.id === id ? { ...t, checked: !t.checked } : t)
+        const updatedCheck = todo.map(t => t.id === id ? { ...t, checked: !t.checked } : t)
         setTodo(updatedCheck)
         sessionStorage.setItem('todo', JSON.stringify(updatedCheck))
-        // setTo(updatedCheck)
-        console.log('checked', updatedCheck)
     }
 
     const handleDelete = (id) => {
         const updateTodo = todo.filter(t => t.id !== id)
         setTodo(updateTodo)
     }
+
     return (
         <ListGroup>
-            {to ? to.map(item => {
+            {todo ? todo.map(item => {
                 return (
-                <ListGroup.Item key={item.id} className='mb-2'>
+                <ListGroup.Item key={item.id} className='mb-2 align-items-center'>
                     <Dropdown id='dropdown-task'>
-                        <Dropdown.Toggle variant="light"><i className="bi bi-three-dots-vertical"></i></Dropdown.Toggle>
+                        <Dropdown.Toggle variant="light" className='bg-none'><i className="bi bi-three-dots-vertical"></i></Dropdown.Toggle>
                         <Dropdown.Menu>
                             <Dropdown.Item onClick={() => handleDelete(item.id)}>Clear task</Dropdown.Item>
                             <Dropdown.Item onClick={() => handleEdit(item.id)}>Edit task</Dropdown.Item>

@@ -29,7 +29,7 @@ const Settings = () => {
         if(profile.password !== '') {
             alert("Are you sure to change to new password ?")
         }
-        fetch(`http://localhost:5000/user/updateUser?email=${user.email}`, {
+        fetch(`http://localhost:7000/user/updateUser?email=${user.email}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(profile)

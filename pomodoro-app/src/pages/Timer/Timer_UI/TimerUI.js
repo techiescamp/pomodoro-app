@@ -12,6 +12,7 @@ export const MyTimerContext = createContext();
 
 const TimerUI = ({ finish, setFinish }) => {
     const { todo, setTodo } = useContext(MyContext);
+    const [errors, setErrors] = useState(null);
 
     let customTimer =  sessionStorage.getItem('customTimer') ? JSON.parse(sessionStorage.getItem('customTimer')) : null;
 
@@ -30,7 +31,6 @@ const TimerUI = ({ finish, setFinish }) => {
         // finds the first uncompleted task and setstate for uncomplete task
         const unCompleteTask = todo.find(t => !t.checked);
         setUnTask({ ...unCompleteTask })
-        console.log(unCompleteTask)
         // check for completed tasks
         const newtodo = todo.filter(f => f.checked === true)
         if(newtodo.length !== 0) {
@@ -85,13 +85,18 @@ const TimerUI = ({ finish, setFinish }) => {
         const user = (guser ? guser : JSON.parse(sessionStorage.getItem('userInfo')))
         // task info
 
-        if (finish.length !== 0) {
-            axios.post("http://localhost:5002/user-tasks", {
-                date: JSON.parse(sessionStorage.getItem('date')),
-                isFinished: true,
-                userData: user,
-                userTasks: finish
-            }).then(result => console.log(result.data))
+        if (finish.length !== 0 && user) {
+            try {
+                axios.post("http://localhost:7000/user-tasks", {
+                    date: JSON.parse(sessionStorage.getItem('date')),
+                    isFinished: true,
+                    userData: user,
+                    userTasks: finish
+                }).then(result => console.log(result.data))
+            } catch(err) {
+                setErrors(err.message)
+            }
+            
         }
     }, [finish])
 
@@ -128,6 +133,7 @@ const TimerUI = ({ finish, setFinish }) => {
     return (
         <MyTimerContext.Provider value={{ isActive, setIsActive, setTimer, setTimerName }}>
             <div className='my-2 w-100 text-center'>
+                {errors && <p className='bg-light p-2 text-danger fw-semibold'>! <br/>{errors}</p>}
                 {/* timer navigation buttons */}
                 <TimerNav />
 

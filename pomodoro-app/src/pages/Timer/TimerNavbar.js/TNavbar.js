@@ -27,14 +27,14 @@ const TNavbar = () => {
     useEffect(() => {
         const getTasks = async () => {
             try {
-                const { data } = await axios.post("http://localhost:5002/tasks", user)
+                const { data } = await axios.post("http://localhost:7000/tasks", user)
                 setList(data)
             } catch (err) {
                 console.log(err.message)
             }
         }
         getTasks()
-    }, [count, user])
+    }, [count])
 
     return (
         <div className='mb-4'>
@@ -52,10 +52,10 @@ const TNavbar = () => {
             </Nav> 
 
             {/* modal */}
-            <TList show={show} setShow={setShow} list={list}/>
+            <TList user={user} show={show} setShow={setShow} list={list}/>
 
             {/* modal report */}
-            <TReport report={report} setReport={setReport} />
+            <TReport user={user} report={report} setReport={setReport} />
         </div>
     )
 }

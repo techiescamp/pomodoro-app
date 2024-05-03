@@ -20,7 +20,7 @@ const Signup = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        fetch("http://localhost:5000/user/signup", {
+        fetch("http://localhost:7000/user/signup", {
             method: 'POST',
             body: JSON.stringify(userDetails),
             headers: {
@@ -44,7 +44,7 @@ const Signup = () => {
     }
 
     const registerGoogle = () => {
-        window.open('http://localhost:5000/auth/google', "_self");
+        window.open('http://localhost:7000/auth/google', "_self");
     }
 
     const inlineStyle = {

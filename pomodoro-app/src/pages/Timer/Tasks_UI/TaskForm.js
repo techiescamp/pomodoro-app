@@ -15,11 +15,7 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        let isTask = JSON.parse(sessionStorage.getItem('todo'));
-        if(isTask){
-            setTodo([...isTask, form]);  
-            sessionStorage.setItem('todo', JSON.stringify([...isTask, form]));
-        } else {
+        if(todo) {
             setTodo([...todo, form]);  
             sessionStorage.setItem('todo', JSON.stringify([...todo, form]));
         }

@@ -4,19 +4,19 @@ import axios from 'axios';
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js/auto';
 import { Bar } from 'react-chartjs-2';
 
-const TReport = ({ report, setReport }) => {
+const TReport = ({ user, report, setReport }) => {
     const [labels, setLabels] = useState(null);
     const [tasks, setTasks] = useState(null);
     const [mtask, setMTask] = useState(null);
 
     const handleClose = () => setReport(false);
-    const user = sessionStorage.getItem('guser') ? 
-        JSON.parse(sessionStorage.getItem('guser'))
-        : JSON.parse(sessionStorage.getItem('userInfo'))
+    // const user = sessionStorage.getItem('guser') ? 
+    //     JSON.parse(sessionStorage.getItem('guser'))
+    //     : JSON.parse(sessionStorage.getItem('userInfo'))
     const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
 
     useEffect(() => {
-        axios.post("http://localhost:5002/tasks", user)
+        axios.post("http://localhost:7000/tasks", user)
             .then(result => { 
                 setLabels(result.data.userTasks.map(i => i.date));
                 const t = result.data.userTasks.map(i => i.tasks.reduce((total, t)  => {
@@ -39,7 +39,7 @@ const TReport = ({ report, setReport }) => {
                     let total = 0
                     ml.map(t => {
                         if(Number(t.month) === index+1) {
-                            total += t.act
+                            return total += t.act
                         }
                     })
                     return total 
@@ -97,6 +97,9 @@ const TReport = ({ report, setReport }) => {
                     <Modal.Header closeButton>
                         <Modal.Title>Report on your day's focus</Modal.Title>
                     </Modal.Header>
+                    
+                    {!user && <p className='text-secondary text-center fs-4 fw-semibold py-2'>! Please login to view your reports</p>}
+                    
                     <div className='text-center my-4'>
                         <button className='btn btn-outline-danger me-3' onClick={showWeekly}>Weekly</button>
                         <button className='btn btn-outline-danger' onClick={showMonthly}>Monthly</button>
