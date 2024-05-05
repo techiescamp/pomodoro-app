@@ -21,6 +21,10 @@ const config = {
     },
     urls: {
         baseUrl: process.env.BASE_URL
+    },
+    mail: {
+        email: process.env.ZOHO_MAIL,
+        password: process.env.ZOHO_PASSWORD
     }
 }
 

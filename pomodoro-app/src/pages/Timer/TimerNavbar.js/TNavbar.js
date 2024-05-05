@@ -25,16 +25,11 @@ const TNavbar = () => {
             : null
 
     useEffect(() => {
-        const getTasks = async () => {
-            try {
-                const { data } = await axios.post("http://localhost:7000/tasks", user)
-                setList(data)
-            } catch (err) {
-                console.log(err.message)
-            }
-        }
-        getTasks()
-    }, [count])
+         if(user) {
+            axios.post("http://localhost:7000/tasks", user)
+                .then(res => setList(res.data))
+        }      
+    }, [])
 
     return (
         <div className='mb-4'>

@@ -109,8 +109,7 @@ const Login = () => {
                     <p>Can't Login ? <Link to='/signup'>Create Account</Link></p>
                     <hr className='w-50 mx-auto' />
                     <div>
-                        <h4 className='mb-3 fw-bold'>DevOpsDock</h4>
-                        <p className='mb-1 small'>One account for DevOpsCube Group</p>
+                        <h4 className='mb-3 text-danger fw-bold'>Pomodoro</h4>
                         <p className='small'>Privacy Policy <span>.</span> User Notice</p>
                     </div>
                 </div>

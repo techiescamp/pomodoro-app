@@ -57,11 +57,18 @@ const userTasks = async (req, res) => {
 }
 
 const tasks = async (req, res) => {
-    const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email })
-    if (existingUser) {
-        return res.send(existingUser)
-    } else {
-        // logger.error('Tasklist did not sent to client')
+    try {
+        if(req.body.email) {
+            const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email })
+            if(existingUser) {
+                return res.send(existingUser)
+            } else {
+                // logger.error('Tasklist did not sent to client')
+            }
+        }
+    }
+    catch(err) {
+        console.log(err)
     }
 }
 

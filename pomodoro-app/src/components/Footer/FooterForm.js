@@ -12,7 +12,7 @@ const FooterForm = () => {
 
     const handleFooterSubmit = async (e) => {
         e.preventDefault();
-        const sent = await axios.post("http://localhost:5003/subscribe", subscribeEmail)
+        const sent = await axios.post("http://localhost:7000/subscribe", subscribeEmail)
         alert(sent.data)
         const mailBody = {
             to: subscribeEmail,
@@ -32,9 +32,9 @@ const FooterForm = () => {
                 </div>
             `
         }
-        const result = await axios.post("http://localhost:5003/send-mail", mailBody)
+        const result = await axios.post("http://localhost:7000/send-mail", mailBody)
         alert(result.data)
-        setSubscribeEmail('')
+        setSubscribeEmail(null)
 }
 
 return (
