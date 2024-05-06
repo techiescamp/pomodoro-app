@@ -14,7 +14,6 @@ const Timer = () => {
         return storedTasks ? JSON.parse(storedTasks) : [];
     });
     const [count, setCount] = useState(0);
-    // const [isAllChecked, setIsAllChecked] = useState(false);
     const [finish, setFinish] = useState([]);
     const [bg, setBg] = useState('#b62525');
 

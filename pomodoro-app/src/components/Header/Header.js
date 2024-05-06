@@ -1,10 +1,12 @@
-// src/components/Header/Header.js
-
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Header.css';
+import { UserContext } from '../../App';
 
-function Header({user}) {
+function Header() {
+  const { user } = useContext(UserContext);
+  console.log(user);
+
   const navigate = useNavigate();
 
   const handlelogout = () => {

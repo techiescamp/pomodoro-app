@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import './settings.css'
+import { UserContext } from '../../App';
 
 const Settings = () => {
-    const user = JSON.parse(sessionStorage.getItem('userInfo'));
+    const { user, corrId } = useContext(UserContext);
+
+    // const user = JSON.parse(sessionStorage.getItem('userInfo'));
     const initialValue = {
         displayName: user.displayName,
         email: user.email,
@@ -31,7 +34,10 @@ const Settings = () => {
         }
         fetch(`http://localhost:7000/user/updateUser?email=${user.email}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'x-correlation-id': corrId, 
+                'Content-Type': 'application/json' 
+            },
             body: JSON.stringify(profile)
         })
         .then(res => res.json())

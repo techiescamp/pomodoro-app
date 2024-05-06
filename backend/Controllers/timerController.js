@@ -1,7 +1,10 @@
+const logger = require('../Logger/logger');
 const TaskTracker = require('../Model/timerModel');
 
 const userTasks = async (req, res) => {
     try {
+        console.log('user-tasks', req.headers['x-correlation-id'])
+
         let existingUser = await TaskTracker.findOne({ "userData.email": req.body.userData.email })
         var payload = {
             userData: req.body.userData,
@@ -48,6 +51,7 @@ const userTasks = async (req, res) => {
                 doc.save()
             }
         }
+        logger.info('Created user-task');
         return res.send('Submitted');
     }
     catch (err) {
@@ -58,9 +62,12 @@ const userTasks = async (req, res) => {
 
 const tasks = async (req, res) => {
     try {
+        console.log('tasks', req.headers['x-correlation-id'])
+
         if(req.body.email) {
             const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email })
             if(existingUser) {
+                logger.info('sent task-list to browser')
                 return res.send(existingUser)
             } else {
                 // logger.error('Tasklist did not sent to client')

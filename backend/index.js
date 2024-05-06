@@ -7,7 +7,12 @@ const config = require('./config');
 const route = require('./Routes/route');
 const PORT = config.server.port;
 require('./middlewares/passport');
+// relic
+require('newrelic');
 
+// logger
+const uuid = require('uuid');
+const logger = require('./Logger/logger');
 
 const app = express();
 
@@ -20,10 +25,27 @@ app.use(express.json());
 app.use(cors({
     origin: config.urls.baseUrl,
     method: 'GET, POST, PUT, PATCH, DELETE',
-    headers: "x-access-token, Content-Type, Accept, Access-Control-Allow-Credentials",
+    headers: "x-access-token, x-correlation-id, Content-Type, Accept, Access-Control-Allow-Credentials",
     credentials: true
 }));
 
+// logg middleware
+app.use((req, res, next) => {
+    const correlationId = req.headers['x-correlation-id'] || Math.floor(Math.random() * 100);
+    const requestId = uuid.v4();
+
+    req.correlationId = correlationId;
+    req.requestId = requestId;
+
+    res.setHeader('x-correlation-id', correlationId);
+    res.setHeader('x-req-id', requestId);
+
+    logger.defaultMeta = {
+        correlationId,
+        requestId
+    }
+    next();
+})
 
 // session middleware
 app.use(session({

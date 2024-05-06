@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react'
-import { MyContext } from '../Timer';
 import Nav from 'react-bootstrap/Nav';
 import axios from 'axios';
 import TList from './TList';
 import TReport from './TReport';
+import { UserContext } from '../../../App';
 
 const TNavbar = () => {
     // context
-    const { count } = useContext(MyContext);
+    const { corrId } = useContext(UserContext)
     // modal state
     // list modal
     const [show, setShow] = useState(false);
@@ -18,18 +18,18 @@ const TNavbar = () => {
     const [report, setReport] = useState(false)
     const handleReport = () => setReport(true);
 
-    const user = sessionStorage.getItem('userInfo') ?
-        JSON.parse(sessionStorage.getItem('userInfo'))
-        : (sessionStorage.getItem('guser')) ?
-            JSON.parse(sessionStorage.getItem('guser'))
-            : null
+    const { user } = useContext(UserContext);
 
     useEffect(() => {
          if(user) {
-            axios.post("http://localhost:7000/tasks", user)
+            axios.post("http://localhost:7000/tasks", user, {
+                headers: {
+                    'x-correlation-id': corrId
+                }
+            })
                 .then(res => setList(res.data))
         }      
-    }, [])
+    }, [user])
 
     return (
         <div className='mb-4'>

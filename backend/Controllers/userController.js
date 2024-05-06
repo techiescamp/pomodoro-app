@@ -3,8 +3,11 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const ObjectId = require('mongodb').ObjectId;
+const logger = require('../Logger/logger');
 
 const signup = async (req, res) => {
+    console.log('signup', req.headers['x-correlation-id']);
+
     const exisitngUser = await User.findOne({ email: req.body.email });
     if (exisitngUser) {
         return res.status(200).json({
@@ -25,6 +28,7 @@ const signup = async (req, res) => {
         }
     });
     await user.save();
+    logger.info('user registered success')
     return res.status(200).json({
         message: "Registered Successfully",
         success: true
@@ -32,11 +36,15 @@ const signup = async (req, res) => {
 }
 
 const login = async (req, res) => {
+    console.log('login', req.headers['x-correlation-id']);
+
     const exisitngUser = await User.findOne({ email: req.body.email });
     if (exisitngUser) {
         const comparePassword = bcrypt.compareSync(req.body.password, exisitngUser.password);
         if (comparePassword) {
             const user_token = jwt.sign({ id: exisitngUser._id }, config.secrets.jwt_key, { expiresIn: 84600 });
+            //
+            logger.info('user logged in')
             return res.status(200).json({
                 message: "Logged in successfully",
                 token: user_token,
@@ -58,6 +66,8 @@ const login = async (req, res) => {
 
 
 const userInfo = async (req, res) => {
+    console.log('userinfo', req.headers['x-correlation-id']);
+
     const token = req.headers['x-access-token'];
     if (!token) {
         return res.status(403).json({
@@ -80,6 +90,7 @@ const userInfo = async (req, res) => {
 }
 
 const updateUser = async (req, res) => {
+    console.log('updateuser', req.headers['x-correlation-id']);
     const reqEmail = req.body.email;
     const reqData = req.body;
     let hashedPassword, update;
@@ -95,6 +106,8 @@ const updateUser = async (req, res) => {
         }
     }
     const user = await User.findOneAndUpdate({ email: reqEmail }, update, { new: true })
+    //
+    logger.info('updated user info')
     return res.status(200).json({ message: "updated your profile", result: user })
 }
 

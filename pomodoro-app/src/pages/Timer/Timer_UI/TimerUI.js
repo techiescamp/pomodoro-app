@@ -7,10 +7,12 @@ import clockAlarm from '../../../assets/audio/clock-alarm.mp3';
 import '../Timer.css';
 import TimerNav from './TimerNav';
 import TimerButtons from './TimerButtons';
+import { UserContext } from '../../../App';
 
 export const MyTimerContext = createContext();
 
 const TimerUI = ({ finish, setFinish }) => {
+    const { corrId } = useContext(UserContext);
     const { todo, setTodo } = useContext(MyContext);
     const [errors, setErrors] = useState(null);
 
@@ -91,8 +93,14 @@ const TimerUI = ({ finish, setFinish }) => {
                     date: JSON.parse(sessionStorage.getItem('date')),
                     isFinished: true,
                     userData: user,
-                    userTasks: finish
-                }).then(result => console.log(result.data))
+                    userTasks: finish,
+                    timer: customTimer || 25
+                }, {
+                    headers: {
+                        'x-correlation-id': corrId
+                    }
+                })
+                .then(result => console.log(result.data))
             } catch(err) {
                 setErrors(err.message)
             }

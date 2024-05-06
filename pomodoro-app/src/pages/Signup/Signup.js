@@ -1,8 +1,11 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+import { UserContext } from '../../App';
 
 
 const Signup = () => {
+    const { corrId } = useContext(UserContext);
+
     const navigate = useNavigate();
     const [status, setStatus] = useState(false);
     const [userDetails, setUserDetails] = useState({
@@ -24,6 +27,7 @@ const Signup = () => {
             method: 'POST',
             body: JSON.stringify(userDetails),
             headers: {
+                'x-correlation-id': corrId,
                 "Content-Type": "application/json"
             }
         })

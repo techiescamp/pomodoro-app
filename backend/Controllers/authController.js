@@ -1,8 +1,9 @@
 const passport = require('passport');
 const config = require('../config');
-
+const logger = require('../Logger/logger');
 
 const failedRoute = (req, res) => {
+    logger.error('Failed to route the login credentials')
     res.status(401).json({
         success: false,
         message: "failure"
@@ -11,6 +12,7 @@ const failedRoute = (req, res) => {
 
 const successRoute = (req, res) => {
     if(req.user) {
+        logger.info('yay user logged!!!')
         res.status(200).json({
             success: true,
             message: "successfull",
@@ -37,6 +39,7 @@ const getGoogleCallback = (req, res) => {
 }
 
 const googleLogout = (req, res) => {
+    logger.info('oops logged out')
     req.logout(function(err) {
         if(err) return next(err)
         res.redirect(config.urls.baseUrl)

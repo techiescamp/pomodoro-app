@@ -1,34 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import axios from 'axios';
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js/auto';
 import { Bar } from 'react-chartjs-2';
+import { UserContext } from '../../../App';
 
-const TReport = ({ user, report, setReport }) => {
+const TReport = ({ report, setReport }) => {
+    const { user, corrId } = useContext(UserContext);
     const [labels, setLabels] = useState(null);
     const [tasks, setTasks] = useState(null);
     const [mtask, setMTask] = useState(null);
 
     const handleClose = () => setReport(false);
-    // const user = sessionStorage.getItem('guser') ? 
-    //     JSON.parse(sessionStorage.getItem('guser'))
-    //     : JSON.parse(sessionStorage.getItem('userInfo'))
+    
     const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
 
     useEffect(() => {
-        axios.post("http://localhost:7000/tasks", user)
+        axios.post("http://localhost:7000/tasks", user, {
+            headers: {
+                'x-correlation-id': corrId
+            }
+        })
             .then(result => { 
                 setLabels(result.data.userTasks.map(i => i.date));
                 const t = result.data.userTasks.map(i => i.tasks.reduce((total, t)  => {
-                    return total += t.act*25
+                    return total += t.act*t.timer
                 }, 0))
+                console.log(t)
                 setTasks(t);
 
                 const ml = result.data.userTasks.map(i => {
                     let total = 0
                     // tasks => j
                     for(let j=0; j<i.tasks.length; j++) {
-                        total = total + i.tasks[j].act*25
+                        total = total + i.tasks[j].act*i.tasks[j].timer
                     }
                     return {
                         act: total,
@@ -46,7 +51,8 @@ const TReport = ({ user, report, setReport }) => {
                 });
                 setMTask(r);
             })
-    }, [])
+    }, [user])
+
     // const monthLabel = labels.map(i => i.split('/')[0])
     const data = {
         labels,

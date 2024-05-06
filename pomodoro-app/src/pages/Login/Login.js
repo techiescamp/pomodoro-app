@@ -1,8 +1,11 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { UserContext } from '../../App';
 
 const Login = () => {
+    const { corrId } = useContext(UserContext);
+    
     const navigate = useNavigate();
     const [status, setStatus] = useState(false);
     const [userLogin, setUserLogin] = useState({
@@ -19,7 +22,11 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post("http://localhost:7000/user/login", userLogin)
+        axios.post("http://localhost:7000/user/login", userLogin, {
+            headers: {
+                'x-correlation-id': corrId
+            }
+        })
             .then(res => {
                 setStatus(res.data);
                 sessionStorage.setItem('token', JSON.stringify(res.data));
@@ -37,6 +44,7 @@ const Login = () => {
     const user = (usertoken) => {
         axios.post("http://localhost:7000/user/userInfo", usertoken, {
             headers: {
+                'x-correlation-id': corrId,
                 "x-access-token": usertoken.token,
             }
         }).then(res => {
