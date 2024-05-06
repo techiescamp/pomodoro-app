@@ -16,7 +16,7 @@ const TimerUI = ({ finish, setFinish }) => {
     const { todo, setTodo } = useContext(MyContext);
     const [errors, setErrors] = useState(null);
 
-    let customTimer =  sessionStorage.getItem('customTimer') ? JSON.parse(sessionStorage.getItem('customTimer')) : null;
+    let customTimer = sessionStorage.getItem('customTimer') ? JSON.parse(sessionStorage.getItem('customTimer')) : null;
 
     const { setCount } = useContext(MyContext);
     const [timer, setTimer] = useState(() => {
@@ -57,8 +57,11 @@ const TimerUI = ({ finish, setFinish }) => {
                 playSound2();
                 let newtodo;
                 // increase 'act' count if repeated
-                newtodo = { ...unTask, act: Number(Number(unTask.act) + 1) }
-                console.log(newtodo)
+                newtodo = { 
+                    ...unTask, 
+                    act: Number(Number(unTask.act) + 1), 
+                    timer: Number(customTimer.timer) || 25
+                }
                 setUnTask({ ...newtodo })
                 // replace original todos with new "added act" using 'map' function
                 const tos = todo.map(item => {
@@ -94,7 +97,6 @@ const TimerUI = ({ finish, setFinish }) => {
                     isFinished: true,
                     userData: user,
                     userTasks: finish,
-                    timer: customTimer || 25
                 }, {
                     headers: {
                         'x-correlation-id': corrId

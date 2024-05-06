@@ -14,6 +14,7 @@ const TaskUI = () => {
         description: '',
         project_title: '',
         act: 0,
+        timer: 0,
         checked: false
     });
 

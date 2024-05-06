@@ -50,6 +50,7 @@ const Login = () => {
         }).then(res => {
             const result = res.data.result
             const login = {
+                userId: result.userId,
                 displayName: result.displayName,
                 avatar: result.avatar,
                 email: result.email
@@ -64,8 +65,7 @@ const Login = () => {
     }
 
     const inlineStyle = {
-        backgroundColor: getColor(),
-        color: 'white',
+        color: getColor(),
         borderRadius: '10px',
         padding: '5px'
     }

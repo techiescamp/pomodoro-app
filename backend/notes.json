@@ -1,0 +1,119 @@
+[
+    {
+        "correlationId": 1452,
+        "host": "localhost:7000",
+        "level": "info",
+        "message": "sent task-list to browser",
+        "method": "POST",
+        "requestId": "35538fc3-8a92-4633-beb4-8909de499ced",
+        "timestamp": "06-05-2024 13:02:05 PM",
+        "url": "/tasks"
+    },
+    {
+        "correlationId": 206,
+        "host": "localhost:7000",
+        "level": "info",
+        "message": "Created user-task",
+        "method": "POST",
+        "requestId": "257c6f55-6e5a-4361-968e-f434fd3a1ffd",
+        "timestamp": "06-05-2024 13:09:52 PM",
+        "url": "/user-tasks"
+    },
+    {
+        "correlationId": 1266,
+        "host": "localhost:7000",
+        "level": "info",
+        "message": "user registered success",
+        "method": "POST",
+        "requestId": "49e4c9ea-584a-4948-a41c-be4f0857105a",
+        "timestamp": "06-05-2024 14:47:40 PM",
+        "url": "/user/signup",
+        "userId": "u1158"
+    },
+    {
+        "correlationId": 1908,
+        "host": "localhost:7000",
+        "level": "info",
+        "message": "user logged in",
+        "method": "POST",
+        "requestId": "51dc53f9-0eb4-4773-a08c-a468030935d9",
+        "timestamp": "06-05-2024 14:48:27 PM",
+        "url": "/user/login",
+        "userId": "u1158"
+    },
+    {
+        "correlationId": 1944,
+        "host": "localhost:7000",
+        "level": "info",
+        "message": "Created user-task",
+        "method": "POST",
+        "requestId": "915dffba-6635-43c7-b4b3-84ddd8e8201d",
+        "timestamp": "06-05-2024 14:53:00 PM",
+        "url": "/user-tasks"
+    },
+    {
+        "correlationId": 54,
+        "host": "localhost:7000",
+        "level": "error",
+        "message": "Tasklist did not sent to client",
+        "method": "POST",
+        "requestId": "c207aa00-ee46-44c0-a081-16115cbde0a7",
+        "timestamp": "06-05-2024 14:58:49 PM",
+        "url": "/tasks"
+    },
+    {
+        "correlationId": 980,
+        "emailId": "anthony@gmail.com",
+        "host": "localhost:7000",
+        "level": "info",
+        "message": "sent task-list to browser",
+        "method": "POST",
+        "requestId": "b402b8fa-1188-4fe9-aca4-5b876d3b070e",
+        "timestamp": "06-05-2024 15:09:43 PM",
+        "url": "/tasks",
+        "userId": "anthony@gmail.com"
+    },
+    {
+        "correlationId": 364,
+        "host": "localhost:7000",
+        "ipAddress": "::1",
+        "level": "info",
+        "message": "sent task-list to browser",
+        "method": "POST",
+        "requestId": "e6688826-6aef-4185-b150-ef550e63a834",
+        "timestamp": "06-05-2024 15:26:30 PM",
+        "url": "/tasks",
+        "userId": "anthony@gmail.com"
+    },
+    {
+        "correlationId": "transaction-19",
+        "emailId": "peterpan@gmail.com",
+        "host": "localhost:7000",
+        "ipAddress": "::1",
+        "level": "info",
+        "message": "sent task-list to browser",
+        "method": "POST",
+        "requestId": "7b0915b2-0389-4675-9e68-21b2e4f9b81d",
+        "statusCode": 200,
+        "timestamp": "06-05-2024 17:19:56 PM",
+        "url": "/tasks"
+    },
+    {
+        "correlationId": "transaction-19",
+        "kind": "ObjectId",
+        "level": "error",
+        "message": "Error exception in user-tasks Cast to ObjectId failed for value \"{ 'userTasks.date': '5/6/2024' }\" (type Object) at path \"_id\" for model \"Task_Tracker\"",
+        "path": "_id",
+        "reason": {},
+        "requestId": "7b0915b2-0389-4675-9e68-21b2e4f9b81d",
+        "stack": "CastError: Cast to ObjectId failed for value \"{ 'userTasks.date': '5/6/2024' }\" (type Object) at path \"_id\" for model \"Task_Tracker\"\n    at SchemaObjectId.cast (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\schema\\objectId.js:250:11)\n    at SchemaType.applySetters (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1236:12)\n    at SchemaType.castForQuery (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1653:17)\n    at cast (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\cast.js:304:34)\n    at Query.cast (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\query.js:4786:12)\n    at Query._castConditions (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\query.js:2199:10)\n    at model.Query._findOneAndUpdate (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\query.js:3280:8)\n    at model.Query.exec (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\query.js:4330:80)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async userTasks (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\Controllers\\timerController.js:48:29)",
+        "stringValue": "\"{ 'userTasks.date': '5/6/2024' }\"",
+        "timestamp": "06-05-2024 17:19:56 PM",
+        "value": {
+            "userTasks.date": "5/6/2024"
+        },
+        "valueType": "Object"
+    }
+]
+
+

@@ -1,5 +1,7 @@
 const logger = require('../Logger/logger');
+const logFormat = require('../Logger/logFormat');
 const TaskTracker = require('../Model/timerModel');
+const { error } = require('winston');
 
 const userTasks = async (req, res) => {
     try {
@@ -51,32 +53,44 @@ const userTasks = async (req, res) => {
                 doc.save()
             }
         }
-        logger.info('Created user-task');
+        
+        //
+        const logResult = {
+            emailId: req.body.userData.email,
+            statusCode: res.statusCode,
+        }
+
+        logger.info('Created user-task', logFormat(req, logResult));
+        
         return res.send('Submitted');
     }
     catch (err) {
+        logger.error('Error exception in user-tasks', err);
         res.send('User needs to login to save tasks')
     }
 
 }
 
 const tasks = async (req, res) => {
-    try {
-        console.log('tasks', req.headers['x-correlation-id'])
-
-        if(req.body.email) {
+        try {
             const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email })
-            if(existingUser) {
-                logger.info('sent task-list to browser')
+            const logResult = {
+                emailId: req.body.email,
+                statusCode: res.statusCode,
+            }
+
+            if (existingUser) {
+                //
+                logger.info('sent task-list to browser', logFormat(req, logResult));
+
                 return res.send(existingUser)
             } else {
-                // logger.error('Tasklist did not sent to client')
+                logger.error('Wrong email-id. Please log again', logFormat(req, req.body.email))
             }
         }
-    }
-    catch(err) {
-        console.log(err)
-    }
+        catch (err) {
+            logger.error('Tasklist did not sent to client', logFormat(req, err))
+        }
 }
 
 

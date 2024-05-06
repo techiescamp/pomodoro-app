@@ -31,7 +31,8 @@ app.use(cors({
 
 // logg middleware
 app.use((req, res, next) => {
-    const correlationId = req.headers['x-correlation-id'] || Math.floor(Math.random() * 100);
+    const correlationId = req.headers['x-correlation-id'] || Math.ceil(Math.random() * 2000);
+    console.log('corr - ', correlationId);
     const requestId = uuid.v4();
 
     req.correlationId = correlationId;
@@ -42,7 +43,7 @@ app.use((req, res, next) => {
 
     logger.defaultMeta = {
         correlationId,
-        requestId
+        requestId,
     }
     next();
 })

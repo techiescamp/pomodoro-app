@@ -65,7 +65,7 @@ const TList = ({user, show, setShow, list}) => {
                                         <ul style={{listStyle: 'none', padding: 0}}>
                                             {t.tasks.map(task => {
                                                 return (
-                                                    <li key={task.id}>{task.act ? task.act*task.timer : 0}<span> min</span></li>
+                                                    <li key={task.id}>{task.act ? task.act*Number(t.timer) : 0}<span> min</span></li>
                                                 )
                                             })}
                                         </ul>

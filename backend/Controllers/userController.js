@@ -4,6 +4,17 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const ObjectId = require('mongodb').ObjectId;
 const logger = require('../Logger/logger');
+const logFormat =require('../Logger/logFormat');
+
+async function generateUserId() {
+    const uid = `u${Math.ceil(Math.random()*2000)}`;
+    const checkUser = Boolean(await User.findOne({userId: uid}));
+
+    if(uid === checkUser.userId) {
+        return generateUserId();
+    }
+    return uid;
+}
 
 const signup = async (req, res) => {
     console.log('signup', req.headers['x-correlation-id']);
@@ -17,7 +28,12 @@ const signup = async (req, res) => {
     }
     const avt = req.body.displayName[0].toUpperCase()
     const hashedPassword = bcrypt.hashSync(req.body.password, 8);
+    const uid = await generateUserId()
+
+    console.log('uid - ', uid);
+
     const user = new User({
+        userId: uid,
         displayName: req.body.displayName,
         password: hashedPassword,
         email: req.body.email,
@@ -28,7 +44,14 @@ const signup = async (req, res) => {
         }
     });
     await user.save();
-    logger.info('user registered success')
+    
+    //
+    const logResult = {
+        userId: user.userId,
+        statusCode: res.statusCode,
+    }
+    logger.info('user registered success', logFormat(req, logResult))
+
     return res.status(200).json({
         message: "Registered Successfully",
         success: true
@@ -43,8 +66,14 @@ const login = async (req, res) => {
         const comparePassword = bcrypt.compareSync(req.body.password, exisitngUser.password);
         if (comparePassword) {
             const user_token = jwt.sign({ id: exisitngUser._id }, config.secrets.jwt_key, { expiresIn: 84600 });
+            
             //
-            logger.info('user logged in')
+            const logResult = {
+                userId: exisitngUser.userId,
+                statusCode: res.statusCode,
+            }
+            logger.info('user logged in', logFormat(req, logResult))
+
             return res.status(200).json({
                 message: "Logged in successfully",
                 token: user_token,
@@ -70,6 +99,9 @@ const userInfo = async (req, res) => {
 
     const token = req.headers['x-access-token'];
     if (!token) {
+        //
+        logger.error('Invalid token', logFormat(req, res))
+        
         return res.status(403).json({
             message: "Invalid user credentials",
             auth: false
@@ -84,6 +116,13 @@ const userInfo = async (req, res) => {
         }
         User.findOne({ _id: new ObjectId(result.id) })
             .then(result => {
+                //
+                const logResult = {
+                    userId: result.userId,
+                    statusCode: res.statusCode,
+                }
+                logger.info('user info sent to client', logFormat(req, logResult))
+
                 res.status(200).json({ result })
             })
     })
@@ -91,6 +130,7 @@ const userInfo = async (req, res) => {
 
 const updateUser = async (req, res) => {
     console.log('updateuser', req.headers['x-correlation-id']);
+
     const reqEmail = req.body.email;
     const reqData = req.body;
     let hashedPassword, update;
@@ -106,8 +146,14 @@ const updateUser = async (req, res) => {
         }
     }
     const user = await User.findOneAndUpdate({ email: reqEmail }, update, { new: true })
+    
     //
-    logger.info('updated user info')
+    const logResult = {
+        userId: user.userId,
+        statusCode: res.statusCode,
+    }
+    logger.info('updated user info', logFormat(req, logResult))
+
     return res.status(200).json({ message: "updated your profile", result: user })
 }
 

@@ -4,10 +4,12 @@ import axios from 'axios';
 import TList from './TList';
 import TReport from './TReport';
 import { UserContext } from '../../../App';
+import { MyContext } from '../Timer';
 
 const TNavbar = () => {
     // context
     const { corrId } = useContext(UserContext)
+    const { count } = useContext(MyContext)
     // modal state
     // list modal
     const [show, setShow] = useState(false);
@@ -22,6 +24,7 @@ const TNavbar = () => {
 
     useEffect(() => {
          if(user) {
+            console.log('navbar', user)
             axios.post("http://localhost:7000/tasks", user, {
                 headers: {
                     'x-correlation-id': corrId
@@ -29,7 +32,7 @@ const TNavbar = () => {
             })
                 .then(res => setList(res.data))
         }      
-    }, [user])
+    }, [count, user])
 
     return (
         <div className='mb-4'>

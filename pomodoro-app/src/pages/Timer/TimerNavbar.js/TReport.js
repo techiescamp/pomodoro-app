@@ -12,7 +12,7 @@ const TReport = ({ report, setReport }) => {
     const [mtask, setMTask] = useState(null);
 
     const handleClose = () => setReport(false);
-    
+
     const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
 
     useEffect(() => {
@@ -21,10 +21,10 @@ const TReport = ({ report, setReport }) => {
                 'x-correlation-id': corrId
             }
         })
-            .then(result => { 
+            .then(result => {
                 setLabels(result.data.userTasks.map(i => i.date));
-                const t = result.data.userTasks.map(i => i.tasks.reduce((total, t)  => {
-                    return total += t.act*t.timer
+                const t = result.data.userTasks.map(i => i.tasks.reduce((total, t) => {
+                    return total += t.act * Number(t.timer)
                 }, 0))
                 console.log(t)
                 setTasks(t);
@@ -32,8 +32,8 @@ const TReport = ({ report, setReport }) => {
                 const ml = result.data.userTasks.map(i => {
                     let total = 0
                     // tasks => j
-                    for(let j=0; j<i.tasks.length; j++) {
-                        total = total + i.tasks[j].act*i.tasks[j].timer
+                    for (let j = 0; j < i.tasks.length; j++) {
+                        total = total + i.tasks[j].act * i.tasks[j].timer
                     }
                     return {
                         act: total,
@@ -43,15 +43,15 @@ const TReport = ({ report, setReport }) => {
                 const r = month.map((m, index) => {
                     let total = 0
                     ml.map(t => {
-                        if(Number(t.month) === index+1) {
+                        if (Number(t.month) === index + 1) {
                             return total += t.act
                         }
                     })
-                    return total 
+                    return total
                 });
                 setMTask(r);
             })
-    }, [user])
+    }, [])
 
     // const monthLabel = labels.map(i => i.split('/')[0])
     const data = {
@@ -63,8 +63,8 @@ const TReport = ({ report, setReport }) => {
                 backgroundColor: 'rgba(255, 99, 132, 0.5)'
             }
         ]
-    } 
-    const mdata ={
+    }
+    const mdata = {
         labels: month,
         datasets: [
             {
@@ -103,24 +103,24 @@ const TReport = ({ report, setReport }) => {
                     <Modal.Header closeButton>
                         <Modal.Title>Report on your day's focus</Modal.Title>
                     </Modal.Header>
-                    
+
                     {!user && <p className='text-secondary text-center fs-4 fw-semibold py-2'>! Please login to view your reports</p>}
-                    
+
                     <div className='text-center my-4'>
                         <button className='btn btn-outline-danger me-3' onClick={showWeekly}>Weekly</button>
                         <button className='btn btn-outline-danger' onClick={showMonthly}>Monthly</button>
                     </div>
                     <Modal.Body id='weekly'>
                         <h4 className='mb-3 text-center text-decoration-underline text-danger fw-bold'>Weekly Report</h4>
-                        <Bar options={options} data={data} className='mb-4'/>
+                        <Bar options={options} data={data} className='mb-4' />
                     </Modal.Body>
 
                     <Modal.Body id='monthly'>
-                        <h4  className='mb-3 text-center text-decoration-underline text-danger fw-bold'>Monthly Report</h4>
-                        <Bar options={options} data={mdata} className='mb-4'/>
+                        <h4 className='mb-3 text-center text-decoration-underline text-danger fw-bold'>Monthly Report</h4>
+                        <Bar options={options} data={mdata} className='mb-4' />
                     </Modal.Body>
                 </section>
-                
+
             </Modal>
         </>
     )

@@ -1,5 +1,5 @@
 import './App.css';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import Timer from './pages/Timer/Timer';
 import Settings from './pages/Settings/Settings';
 import Login from './pages/Login/Login';
@@ -54,23 +54,20 @@ function App() {
   },[])
 
 
-
   return (
-    <Router>
-      <UserContext.Provider value={{user, corrId}}>
-        <div className='App'>
-          <Header />
-          <Routes>
-            <Route exact path='/' Component={Timer} />
-            {user && <Route path="/:username/settings" Component={Settings} /> }
-            <Route path='/login' Component={Login} />
-            <Route path='/signup' Component={Signup} />
-            <Route path='*' Component={ErrorPage} />
-          </Routes>
-          <Footer />
-        </div>
-      </UserContext.Provider>
-    </Router>
+    <UserContext.Provider value={{ user, corrId }}>
+      <div className='App'>
+        <Header />
+        <Routes>
+          <Route exact path='/' Component={Timer} />
+          {user && <Route path="/:username/settings" Component={Settings} />}
+          <Route path='/login' Component={Login} />
+          <Route path='/signup' Component={Signup} />
+          <Route path='*' Component={ErrorPage} />
+        </Routes>
+        <Footer />
+      </div>
+    </UserContext.Provider>
   );
 }
 

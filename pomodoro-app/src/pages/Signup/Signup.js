@@ -52,8 +52,7 @@ const Signup = () => {
     }
 
     const inlineStyle = {
-        backgroundColor: getColor(),
-        color: 'white',
+        color: getColor(),
         borderRadius: '10px',
         padding: '5px'
     }
@@ -98,7 +97,7 @@ const Signup = () => {
                                 value={userDetails.password}
                                 onChange={handleChange}
                                 className='form-control mb-3 border border-secondary rounded-1'
-                                placeholder='Enter your email'
+                                placeholder='Enter your password'
                                 required
                             />
                             <p className='text-start' style={{ fontSize: '12px' }}>
