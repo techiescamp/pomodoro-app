@@ -4,6 +4,7 @@
   "description": "backend for pomodoro app",
   "main": "index.js",
   "scripts": {
+    "build": "npm start",
     "start": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
