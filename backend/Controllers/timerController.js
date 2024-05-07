@@ -38,6 +38,7 @@ const userTasks = async (req, res) => {
                 payload = {
                     userTasks: [...oldTask, newTask]
                 }
+                
                 // retain old task and add new task
                 const doc = await TaskTracker.findOneAndUpdate(filter, payload, options)
                 doc.save()
@@ -45,7 +46,7 @@ const userTasks = async (req, res) => {
                 // if same date or date is found
                 const targetDate = req.body.date.split(' ')[0]
                 // replace old date tasks...
-                const doc = await TaskTracker.findByIdAndUpdate(
+                const doc = await TaskTracker.findOneAndUpdate(
                     { 'userTasks.date': targetDate },
                     { $set: { 'userTasks.$.tasks': req.body.userTasks } },
                     { new: true }
@@ -75,6 +76,7 @@ const tasks = async (req, res) => {
         try {
             const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email })
             const logResult = {
+                userId: req.body.useId,
                 emailId: req.body.email,
                 statusCode: res.statusCode,
             }

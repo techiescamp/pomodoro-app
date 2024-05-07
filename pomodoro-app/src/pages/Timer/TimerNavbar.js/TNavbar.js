@@ -23,16 +23,18 @@ const TNavbar = () => {
     const { user } = useContext(UserContext);
 
     useEffect(() => {
-         if(user) {
-            console.log('navbar', user)
+        if(user) {
             axios.post("http://localhost:7000/tasks", user, {
                 headers: {
                     'x-correlation-id': corrId
                 }
             })
-                .then(res => setList(res.data))
+            .then(res => {
+                console.log(res.data)
+                setList(res.data)
+            })
         }      
-    }, [count, user])
+    }, [])
 
     return (
         <div className='mb-4'>

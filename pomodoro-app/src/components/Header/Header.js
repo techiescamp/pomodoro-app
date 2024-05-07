@@ -5,7 +5,6 @@ import { UserContext } from '../../App';
 
 function Header() {
   const { user } = useContext(UserContext);
-  console.log(user);
 
   const navigate = useNavigate();
 
@@ -36,11 +35,19 @@ function Header() {
                     <span className="">{user.displayName}</span>
                   </button>
                   <ul className='dropdown-menu'>
-                    <li className='dropdown-item mb-1' onClick={handlelogout}>Logout</li>
-                    <li className='dropdown-item mb-1'>
-                      <Link to={`/${user.displayName}/settings`} className="text-decoration-none text-black">
-                        Settings
+                    <li className='dropdown-header mb-1 border border-bottom-1'>
+                      <Link to='/' className="text-decoration-none text-secondary">
+                        <p className='mb-0'>{user.displayName}</p>
+                        <p className='mb-0'>#{user.email}</p>
                       </Link>
+                    </li>
+                    <li className='dropdown-item mb-1 py-2'>
+                      <Link to={`/${user.displayName}/settings`} className="text-decoration-none text-black">
+                        <i className="bi bi-person-circle me-3"></i>Settings
+                      </Link>
+                    </li>
+                    <li className='dropdown-item mb-1 py-2' onClick={handlelogout}>
+                      <i className="bi bi-box-arrow-right me-3"></i>Logout
                     </li>
                   </ul>
                 </li> 

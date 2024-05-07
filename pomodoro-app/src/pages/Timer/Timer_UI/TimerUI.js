@@ -92,6 +92,7 @@ const TimerUI = ({ finish, setFinish }) => {
 
         if (finish.length !== 0 && user) {
             try {
+                console.log(finish)
                 axios.post("http://localhost:7000/user-tasks", {
                     date: JSON.parse(sessionStorage.getItem('date')),
                     isFinished: true,

@@ -16,12 +16,14 @@ const TReport = ({ report, setReport }) => {
     const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
 
     useEffect(() => {
+
         axios.post("http://localhost:7000/tasks", user, {
             headers: {
                 'x-correlation-id': corrId
             }
         })
-            .then(result => {
+        .then(result => {
+                console.log(result.data)
                 setLabels(result.data.userTasks.map(i => i.date));
                 const t = result.data.userTasks.map(i => i.tasks.reduce((total, t) => {
                     return total += t.act * Number(t.timer)

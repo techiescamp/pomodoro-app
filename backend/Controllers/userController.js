@@ -30,8 +30,6 @@ const signup = async (req, res) => {
     const hashedPassword = bcrypt.hashSync(req.body.password, 8);
     const uid = await generateUserId()
 
-    console.log('uid - ', uid);
-
     const user = new User({
         userId: uid,
         displayName: req.body.displayName,
@@ -65,7 +63,11 @@ const login = async (req, res) => {
     if (exisitngUser) {
         const comparePassword = bcrypt.compareSync(req.body.password, exisitngUser.password);
         if (comparePassword) {
-            const user_token = jwt.sign({ id: exisitngUser._id }, config.secrets.jwt_key, { expiresIn: 84600 });
+            const payload = {
+                id: exisitngUser._id,
+                userId: exisitngUser.userId
+            }
+            const user_token = jwt.sign(payload, config.secrets.jwt_key, { expiresIn: 84600 });
             
             //
             const logResult = {
@@ -75,18 +77,23 @@ const login = async (req, res) => {
             logger.info('user logged in', logFormat(req, logResult))
 
             return res.status(200).json({
-                message: "Logged in successfully",
                 token: user_token,
                 success: true
             })
         } else {
-            return res.status(403).json({
+            const logResult = {
+                userId: exisitngUser.userId,
+                statusCode: res.statusCode,
+            }
+            logger.info('Password is incorrect', logFormat(req, logResult))
+            return res.status(401).json({
                 message: "Password is incorrect",
                 success: false
             })
         }
     } else {
-        return res.status(403).json({
+        logger.info('User does not exist. Create new user', logFormat(req, res.statusCode))
+        return res.status(401).json({
             message: 'User does not exist. Create new user',
             success: false
         })
@@ -94,36 +101,48 @@ const login = async (req, res) => {
 }
 
 
-const userInfo = async (req, res) => {
+const verifyUser = async (req, res) => {
     console.log('userinfo', req.headers['x-correlation-id']);
 
     const token = req.headers['x-access-token'];
     if (!token) {
         //
-        logger.error('Invalid token', logFormat(req, res))
+        logger.error('Invalid token', logFormat(req, res.statusCode))
         
         return res.status(403).json({
-            message: "Invalid user credentials",
+            message: "Invalid token",
             auth: false
         })
     }
     jwt.verify(token, config.secrets.jwt_key, (err, result) => {
         if (err) {
-            return res.status(403).json({
+            logger.error('Invalid token', logFormat(req, res.statusCode))
+
+            return res.status(401).json({
                 message: "Invalid user credentials",
                 auth: false
             })
         }
+
         User.findOne({ _id: new ObjectId(result.id) })
             .then(result => {
+                const payload = {
+                    message:'userlogged in successfully',
+                    success: true,
+                    avatar: result.avatar,
+                    googleId: result.googleId,
+                    userId: result.userId,
+                    email: result.email,
+                    displayName: result.displayName 
+                }
                 //
                 const logResult = {
                     userId: result.userId,
                     statusCode: res.statusCode,
                 }
                 logger.info('user info sent to client', logFormat(req, logResult))
-
-                res.status(200).json({ result })
+                
+                res.status(200).json(payload)
             })
     })
 }
@@ -160,6 +179,6 @@ const updateUser = async (req, res) => {
 module.exports = {
     signup: signup,
     login: login,
-    userInfo: userInfo,
+    verifyUser: verifyUser,
     updateUser: updateUser
 }

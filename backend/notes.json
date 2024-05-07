@@ -113,6 +113,22 @@
             "userTasks.date": "5/6/2024"
         },
         "valueType": "Object"
+    },
+    {
+        "correlationId": "transaction-10",
+        "kind": "ObjectId",
+        "level": "error",
+        "message": "Error exception in user-tasks Cast to ObjectId failed for value \"{ 'userTasks.date': '5/6/2024' }\" (type Object) at path \"_id\" for model \"Task_Tracker\"",
+        "path": "_id",
+        "reason": {},
+        "requestId": "4d766a57-3e57-49e1-aef6-ccc37b88b5af",
+        "stack": "CastError: Cast to ObjectId failed for value \"{ 'userTasks.date': '5/6/2024' }\" (type Object) at path \"_id\" for model \"Task_Tracker\"\n    at SchemaObjectId.cast (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\schema\\objectId.js:250:11)\n    at SchemaType.applySetters (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1236:12)\n    at SchemaType.castForQuery (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1653:17)\n    at cast (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\cast.js:304:34)\n    at Query.cast (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\query.js:4786:12)\n    at Query._castConditions (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\query.js:2199:10)\n    at model.Query._findOneAndUpdate (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\query.js:3280:8)\n    at model.Query.exec (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\node_modules\\mongoose\\lib\\query.js:4330:80)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async userTasks (C:\\Users\\DELL\\OneDrive\\Desktop\\pomodoro\\pomodoro-app\\backend\\Controllers\\timerController.js:50:29)",
+        "stringValue": "\"{ 'userTasks.date': '5/6/2024' }\"",
+        "timestamp": "06-05-2024 17:43:53 PM",
+        "value": {
+            "userTasks.date": "5/6/2024"
+        },
+        "valueType": "Object"
     }
 ]
 

@@ -26,8 +26,6 @@
 
 .dropdown-toggle::after {
     display: none !important;
-    /* color: #b62525 */
-    /* '#D24545' */
 }
 
 #taskform {
@@ -100,6 +98,10 @@
 }
 
 /* TList */
+#mtableList.modal-dialog {
+    max-width: 75%;
+}
+
 #tableList td,  #tableList th {
     border: 0.0625rem solid #ddd;
     padding: 0.75rem;

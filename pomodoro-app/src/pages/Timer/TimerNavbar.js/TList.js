@@ -29,7 +29,7 @@ const TList = ({user, show, setShow, list}) => {
     }
 
     return (
-        <Modal show={show} onHide={handleClose}>
+        <Modal id='mtableList' show={show} onHide={handleClose}>
             <Modal.Header closeButton>
                 <Modal.Title>Your tasks list</Modal.Title>
                 <Button variant='none' className='mx-5 btn-outline-primary' onClick={downloadbtn}>Download</Button>
@@ -46,6 +46,7 @@ const TList = ({user, show, setShow, list}) => {
                             <th>Title</th>
                             <th>Focus time</th>
                             <th>Project</th>
+                            <th>Description</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,7 +66,7 @@ const TList = ({user, show, setShow, list}) => {
                                         <ul style={{listStyle: 'none', padding: 0}}>
                                             {t.tasks.map(task => {
                                                 return (
-                                                    <li key={task.id}>{task.act ? task.act*Number(t.timer) : 0}<span> min</span></li>
+                                                    <li key={task.id}>{task.act ? task.act*Number(task.timer) : 0}<span> min</span></li>
                                                 )
                                             })}
                                         </ul>
@@ -74,7 +75,16 @@ const TList = ({user, show, setShow, list}) => {
                                         <ul style={{listStyle: 'none'}}>
                                             {t.tasks.map(task => {
                                                 return (
-                                                    <li key={task.id}>{task.project_title ? task.project_title : '-'}</li>
+                                                    <li key={task.id}>{task.project_title ? task.project_title : `Project Title-${task.id}`}</li>
+                                                )
+                                            })}
+                                        </ul>
+                                    </td>
+                                    <td>
+                                        <ul style={{listStyle: 'none'}}>
+                                            {t.tasks.map(task => {
+                                                return (
+                                                    <li key={task.id}>{task.description ? task.decription : `task Description-${task.id}`}</li>
                                                 )
                                             })}
                                         </ul>

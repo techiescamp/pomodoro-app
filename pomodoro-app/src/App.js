@@ -1,5 +1,5 @@
 import './App.css';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import Timer from './pages/Timer/Timer';
 import Settings from './pages/Settings/Settings';
 import Login from './pages/Login/Login';
@@ -16,9 +16,11 @@ function App() {
   const [ user, setUser ] = useState(null);
   const corrId = `transaction-${Math.floor(Math.random()*100)}`
 
+  const loc = useLocation();
+  const usersession = loc ? loc.state : null;
 
-  const userItem = JSON.parse(sessionStorage.getItem('userInfo'));
-  let usersession = userItem ? userItem : false;
+  // const userItem = JSON.parse(sessionStorage.getItem('userInfo'));
+  // let usersession = userItem ? userItem : false;
 
   useEffect(() => {
     const userFunction = async(usersession) => {
@@ -42,7 +44,6 @@ function App() {
           }
           sessionStorage.setItem('guser', JSON.stringify(guser))
           setUser(data.user)
-          console.log(data.user)
         }
         catch(err) {
           console.log(err.message)
@@ -51,7 +52,7 @@ function App() {
     }
 
     userFunction(usersession)
-  },[])
+  },[usersession])
 
 
   return (

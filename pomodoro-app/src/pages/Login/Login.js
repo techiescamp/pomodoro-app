@@ -5,7 +5,7 @@ import { UserContext } from '../../App';
 
 const Login = () => {
     const { corrId } = useContext(UserContext);
-    
+
     const navigate = useNavigate();
     const [status, setStatus] = useState(false);
     const [userLogin, setUserLogin] = useState({
@@ -22,43 +22,54 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const cid = corrId || `(transaction-${Math.ceil(Math.random()*10)})`;
         axios.post("http://localhost:7000/user/login", userLogin, {
             headers: {
-                'x-correlation-id': corrId
+                'x-correlation-id': cid
             }
         })
+        .then(res => {
+            // sessionStorage.setItem('token', JSON.stringify(res.data));
+            //
+            console.log(res.data.token)
+            axios.post('http://localhost:7000/user/verifyUser', res.data, {
+                headers: {
+                    'x-correlation-id': cid,
+                    'x-access-token': res.data.token
+                }
+            })
             .then(res => {
-                setStatus(res.data);
-                sessionStorage.setItem('token', JSON.stringify(res.data));
-                user(res.data);
+                setStatus(res.data)
+                navigate('/', {state: res.data})
             })
-            .catch(err => {
-                setStatus(err.response.data)
-            })
+        })
+        .catch(err => {
+            setStatus(err.response.data)
+        })
         setUserLogin({
             email: '',
             password: ''
         });
     }
 
-    const user = (usertoken) => {
-        axios.post("http://localhost:7000/user/userInfo", usertoken, {
-            headers: {
-                'x-correlation-id': corrId,
-                "x-access-token": usertoken.token,
-            }
-        }).then(res => {
-            const result = res.data.result
-            const login = {
-                userId: result.userId,
-                displayName: result.displayName,
-                avatar: result.avatar,
-                email: result.email
-            }
-            sessionStorage.setItem('userInfo', JSON.stringify(login));
-            navigate('/')
-        });
-    }
+    // const user = (usertoken) => {
+    //     axios.post("http://localhost:7000/user/userInfo", usertoken, {
+    //         headers: {
+    //             'x-correlation-id': corrId,
+    //             "x-access-token": usertoken.token,
+    //         }
+    //     }).then(res => {
+    //         const result = res.data.result
+    //         const login = {
+    //             userId: result.userId,
+    //             displayName: result.displayName,
+    //             avatar: result.avatar,
+    //             email: result.email
+    //         }
+    //         sessionStorage.setItem('userInfo', JSON.stringify(login));
+    //         navigate('/')
+    //     });
+    // }
 
     const loginGoogle = () => {
         window.open("http://localhost:7000/auth/google", "_self")
