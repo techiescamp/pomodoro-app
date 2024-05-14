@@ -1,7 +1,6 @@
 const logger = require('../Logger/logger');
 const logFormat = require('../Logger/logFormat');
 const TaskTracker = require('../Model/timerModel');
-const { error } = require('winston');
 
 const userTasks = async (req, res) => {
     try {
@@ -38,7 +37,7 @@ const userTasks = async (req, res) => {
                 payload = {
                     userTasks: [...oldTask, newTask]
                 }
-                
+
                 // retain old task and add new task
                 const doc = await TaskTracker.findOneAndUpdate(filter, payload, options)
                 doc.save()
@@ -54,7 +53,7 @@ const userTasks = async (req, res) => {
                 doc.save()
             }
         }
-        
+
         //
         const logResult = {
             emailId: req.body.userData.email,
@@ -62,37 +61,35 @@ const userTasks = async (req, res) => {
         }
 
         logger.info('Created user-task', logFormat(req, logResult));
-        
+
         return res.send('Submitted');
     }
     catch (err) {
         logger.error('Error exception in user-tasks', err);
         res.send('User needs to login to save tasks')
     }
-
 }
 
 const tasks = async (req, res) => {
-        try {
-            const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email })
-            const logResult = {
-                userId: req.body.useId,
-                emailId: req.body.email,
-                statusCode: res.statusCode,
-            }
-
-            if (existingUser) {
-                //
-                logger.info('sent task-list to browser', logFormat(req, logResult));
-
-                return res.send(existingUser)
-            } else {
-                logger.error('Wrong email-id. Please log again', logFormat(req, req.body.email))
-            }
+    console.log(req.body)
+    try {
+        const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email })
+        const logResult = {
+            userId: req.body.useId,
+            emailId: req.body.email,
+            statusCode: res.statusCode,
         }
-        catch (err) {
-            logger.error('Tasklist did not sent to client', logFormat(req, err))
+        if (existingUser) {
+            //
+            logger.info('sent task-list to browser', logFormat(req, logResult));
+            return res.send(existingUser)
+        } else {
+            logger.error('Wrong email-id. Please log again', logFormat(req, req.body.email))
         }
+    }
+    catch (err) {
+        logger.error('Tasklist did not sent to client', logFormat(req, err))
+    }
 }
 
 

@@ -2,9 +2,12 @@ import React, { useContext } from 'react'
 import { MyContext } from '../Timer';
 import TaskButtons from './TaskButtons';
 import '../Timer.css';
+import axios from 'axios';
+import { UserContext } from '../../../App';
 
 const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
     const { todo, setTodo } = useContext(MyContext);
+    const { xCorrId } = useContext(UserContext);
 
     const handleChange = (e) => {
         setForm({
@@ -15,12 +18,26 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        // if user logged again today ? integrate old tasks to today's tasks 
+        const todayDate = sessionStorage.getItem('date');
+        axios.post('http://localhost:7000/checkTodayTasks', todayDate, {
+            headers: {
+                'x-correlation-id': xCorrId 
+            }
+        })
+        .then(res => {
+            console.log(res.data);
+        })
+
+        // or if new login today ?
+        const checkedTasks = sessionStorage.getItem('checkedTasks') ? JSON.parse(sessionStorage.getItem('checkedTasks')) : null;
         if(todo) {
             setTodo([...todo, form]);  
             sessionStorage.setItem('todo', JSON.stringify([...todo, form]));
         }
+        let totalLength = checkedTasks.length + todo.length || todo.length;
         setForm({
-            id: todo.length + 1,
+            id: totalLength + 1 || 0,
             title: '',
             description: '',
             project_title: '',

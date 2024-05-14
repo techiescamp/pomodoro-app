@@ -1,6 +1,6 @@
 import './App.css';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import Timer from './pages/Timer/Timer';
+import Home from './pages/Home/Home';
 import Settings from './pages/Settings/Settings';
 import Login from './pages/Login/Login';
 import Signup from './pages/Signup/Signup';
@@ -13,55 +13,26 @@ import React, { createContext, useEffect, useState } from 'react';
 export const UserContext = createContext();
 
 function App() {
-  const [ user, setUser ] = useState(null);
-  const corrId = `transaction-${Math.floor(Math.random()*100)}`
+  const [user, setUser] = useState(null);
+  const [xCorrId, setXCorrId] = useState(null);
 
   const loc = useLocation();
-  const usersession = loc ? loc.state : null;
-
-  // const userItem = JSON.parse(sessionStorage.getItem('userInfo'));
-  // let usersession = userItem ? userItem : false;
-
+  
   useEffect(() => {
-    const userFunction = async(usersession) => {
-      if(usersession) {
-        setUser(usersession)
-      } else {
-        try {
-          const response = await fetch('http://localhost:7000/auth/login/success', {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'x-correlation-id': corrId,
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Credentials": true
-            }
-          });
-          const data = await response.json();
-          const guser = {
-            displayName: data.user.displayName,
-            email: data.user.email
-          }
-          sessionStorage.setItem('guser', JSON.stringify(guser))
-          setUser(data.user)
-        }
-        catch(err) {
-          console.log(err.message)
-        }
-      } 
+    const getUser = JSON.parse(sessionStorage.getItem('userinfo')) || null;
+    if(getUser) {
+      setUser(getUser);
+      setXCorrId(getUser.xCorrId);
     }
-
-    userFunction(usersession)
-  },[usersession])
-
+  },[loc])
 
   return (
-    <UserContext.Provider value={{ user, corrId }}>
+    <UserContext.Provider value={{ user, setUser, xCorrId, setXCorrId }}>
       <div className='App'>
         <Header />
         <Routes>
-          <Route exact path='/' Component={Timer} />
-          {user && <Route path="/:username/settings" Component={Settings} />}
+          <Route exact path='/' Component={Home} />
+          <Route path="/:username/settings" Component={Settings} />
           <Route path='/login' Component={Login} />
           <Route path='/signup' Component={Signup} />
           <Route path='*' Component={ErrorPage} />

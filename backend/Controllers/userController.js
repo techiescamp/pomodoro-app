@@ -21,7 +21,7 @@ const signup = async (req, res) => {
 
     const exisitngUser = await User.findOne({ email: req.body.email });
     if (exisitngUser) {
-        return res.status(200).json({
+        return res.status(401).json({
             message: "User already registered",
             success: "warning"
         })
@@ -52,6 +52,7 @@ const signup = async (req, res) => {
 
     return res.status(200).json({
         message: "Registered Successfully",
+        xCorrId: req.headers['x-correlation-id'],
         success: true
     })
 }
@@ -67,15 +68,13 @@ const login = async (req, res) => {
                 id: exisitngUser._id,
                 userId: exisitngUser.userId
             }
-            const user_token = jwt.sign(payload, config.secrets.jwt_key, { expiresIn: 84600 });
-            
+            const user_token = jwt.sign(payload, config.secrets.jwt_key, { expiresIn: 84600 });            
             //
             const logResult = {
                 userId: exisitngUser.userId,
                 statusCode: res.statusCode,
             }
             logger.info('user logged in', logFormat(req, logResult))
-
             return res.status(200).json({
                 token: user_token,
                 success: true
@@ -127,6 +126,7 @@ const verifyUser = async (req, res) => {
         User.findOne({ _id: new ObjectId(result.id) })
             .then(result => {
                 const payload = {
+                    xCorrId: req.headers['x-correlation-id'],
                     message:'userlogged in successfully',
                     success: true,
                     avatar: result.avatar,
@@ -148,8 +148,6 @@ const verifyUser = async (req, res) => {
 }
 
 const updateUser = async (req, res) => {
-    console.log('updateuser', req.headers['x-correlation-id']);
-
     const reqEmail = req.body.email;
     const reqData = req.body;
     let hashedPassword, update;
@@ -172,7 +170,6 @@ const updateUser = async (req, res) => {
         statusCode: res.statusCode,
     }
     logger.info('updated user info', logFormat(req, logResult))
-
     return res.status(200).json({ message: "updated your profile", result: user })
 }
 

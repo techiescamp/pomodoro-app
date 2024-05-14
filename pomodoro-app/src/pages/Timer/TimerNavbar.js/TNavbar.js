@@ -8,9 +8,9 @@ import { MyContext } from '../Timer';
 
 const TNavbar = () => {
     // context
-    const { corrId } = useContext(UserContext)
+    const { user, xCorrId } = useContext(UserContext)
     const { count } = useContext(MyContext)
-    // modal state
+
     // list modal
     const [show, setShow] = useState(false);
     const handleShow = () => setShow(true);
@@ -20,21 +20,20 @@ const TNavbar = () => {
     const [report, setReport] = useState(false)
     const handleReport = () => setReport(true);
 
-    const { user } = useContext(UserContext);
-
     useEffect(() => {
-        if(user) {
+        if (user) {
+            console.log('navbar-list')
+            console.log(xCorrId);
             axios.post("http://localhost:7000/tasks", user, {
                 headers: {
-                    'x-correlation-id': corrId
+                    'x-correlation-id': xCorrId
                 }
             })
-            .then(res => {
-                console.log(res.data)
-                setList(res.data)
-            })
-        }      
-    }, [])
+                .then(res => {
+                    setList(res.data)
+                })
+        }
+    }, [user, count])
 
     return (
         <div className='mb-4'>
@@ -49,13 +48,13 @@ const TNavbar = () => {
                         Report
                     </Nav.Link>
                 </Nav.Item>
-            </Nav> 
+            </Nav>
 
             {/* modal */}
-            <TList user={user} show={show} setShow={setShow} list={list}/>
+            <TList user={user} show={show} setShow={setShow} list={list} />
 
             {/* modal report */}
-            <TReport user={user} report={report} setReport={setReport} />
+            <TReport user={user} report={report} setReport={setReport} list={list} />
         </div>
     )
 }

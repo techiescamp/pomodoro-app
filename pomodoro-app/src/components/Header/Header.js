@@ -1,12 +1,47 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Header.css';
 import { UserContext } from '../../App';
 
 function Header() {
-  const { user } = useContext(UserContext);
-
   const navigate = useNavigate();
+  const loc = useLocation();
+
+  const { user, setUser, setXCorrId } = useContext(UserContext);
+  const usersession = JSON.parse(sessionStorage.getItem('userInfo')) || null;
+
+  useEffect(() => {
+      if(usersession) {
+        setUser(usersession)
+        setXCorrId(usersession.setXCorrId)
+      } else {
+        try {
+          fetch('http://localhost:7000/auth/login/success', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'x-correlation-id': `transaction-${Math.ceil(Math.random() * 10)}`,
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Credentials": true
+            }
+          })
+          .then(res => res.json())
+          .then(data => {
+            console.log('guser: ', data)
+            const guser = {
+              displayName: data.user.displayName,
+              email: data.user.email
+            }
+            sessionStorage.setItem('guser', JSON.stringify(guser))
+            setUser(data.user)
+            setXCorrId(data.corrId);
+          })
+        }
+        catch(err) {
+          console.log(err.message)
+        }
+      } 
+  },[loc])
 
   const handlelogout = () => {
     window.open("http://localhost:7000/auth/logout", "_self");

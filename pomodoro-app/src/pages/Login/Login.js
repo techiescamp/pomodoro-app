@@ -1,12 +1,12 @@
-import React, { useContext, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { UserContext } from '../../App';
 
 const Login = () => {
-    const { corrId } = useContext(UserContext);
-
     const navigate = useNavigate();
+    const loc = useLocation();
+    const xCorrId = loc.state || null;
+
     const [status, setStatus] = useState(false);
     const [userLogin, setUserLogin] = useState({
         email: '',
@@ -22,7 +22,7 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const cid = corrId || `(transaction-${Math.ceil(Math.random()*10)})`;
+        const cid = xCorrId || `transaction-${Math.ceil(Math.random()*10)}`;
         axios.post("http://localhost:7000/user/login", userLogin, {
             headers: {
                 'x-correlation-id': cid
@@ -39,8 +39,10 @@ const Login = () => {
                 }
             })
             .then(res => {
+                console.log(res.data)
                 setStatus(res.data)
-                navigate('/', {state: res.data})
+                sessionStorage.setItem('userInfo', JSON.stringify(res.data))
+                navigate('/')
             })
         })
         .catch(err => {

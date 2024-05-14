@@ -11,7 +11,8 @@ export const MyContext = createContext();
 const Timer = () => {
     const [todo, setTodo] = useState(() => {
         const storedTasks = sessionStorage.getItem('todo');
-        return storedTasks ? JSON.parse(storedTasks) : [];
+        const checkedTasks = sessionStorage.getItem('checkedTasks');
+        return storedTasks ? JSON.parse(storedTasks) : JSON.parse(checkedTasks) || [];
     });
     const [count, setCount] = useState(0);
     const [finish, setFinish] = useState([]);
@@ -27,6 +28,17 @@ const Timer = () => {
     }
 
     const handleClearTask = () => {
+        // store checked tasks in session-storage
+        const getCompleteTasks = JSON.parse(sessionStorage.getItem('checkedTasks'));
+        const getTodos = todo.filter(t => t.checked === true);
+        let checkedTasks;
+        if(getCompleteTasks !== null) {
+            checkedTasks = [...getCompleteTasks, ...getTodos]
+        } else {
+            checkedTasks = [...getTodos]
+        }
+        sessionStorage.setItem('checkedTasks', JSON.stringify(checkedTasks));
+        // filter un-chekced tasks and sent to list
         const newTodo = todo.filter(t => t.checked !== true)
         setTodo(newTodo)
         sessionStorage.setItem('todo', JSON.stringify(newTodo));
@@ -34,7 +46,7 @@ const Timer = () => {
 
     const handleClearAll = () => {
         setTodo([])
-        sessionStorage.setItem('todo', []);
+        // sessionStorage.setItem('todo', []);
     }
 
     return (

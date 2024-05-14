@@ -23,11 +23,13 @@ const Signup = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const cid = `transaction-${Math.ceil(Math.random()*200)}`;
+
         fetch("http://localhost:7000/user/signup", {
             method: 'POST',
             body: JSON.stringify(userDetails),
             headers: {
-                'x-correlation-id': corrId,
+                'x-correlation-id': cid,
                 "Content-Type": "application/json"
             }
         })
@@ -36,8 +38,9 @@ const Signup = () => {
                 throw new Error("Not registered")
             })
             .then(data => {
+                console.log('signup: ', data)
                 setStatus(data);
-                navigate("/login")
+                navigate("/login", {state: data.xCorrId})
             });
 
         setUserDetails({

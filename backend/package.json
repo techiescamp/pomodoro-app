@@ -5,17 +5,20 @@
   "main": "index.js",
   "scripts": {
     "build": "npm install",
-    "start": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node --require ./jaegerTrace.js index.js"
   },
   "author": "sravya veeravalli",
   "license": "ISC",
   "dependencies": {
     "@opentelemetry/api": "^1.8.0",
     "@opentelemetry/auto-instrumentations-node": "^0.46.0",
+    "@opentelemetry/exporter-jaeger": "^1.24.1",
+    "@opentelemetry/resources": "^1.24.1",
     "@opentelemetry/sdk-metrics": "^1.24.0",
-    "@opentelemetry/sdk-node": "^0.51.0",
+    "@opentelemetry/sdk-node": "^0.51.1",
     "@opentelemetry/sdk-trace-node": "^1.24.0",
+    "@opentelemetry/semantic-conventions": "^1.24.1",
+    "@opentelemetry/tracing": "^0.24.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

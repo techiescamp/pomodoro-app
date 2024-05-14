@@ -4,9 +4,12 @@ import axios from 'axios';
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js/auto';
 import { Bar } from 'react-chartjs-2';
 import { UserContext } from '../../../App';
+import { MyContext } from '../Timer';
 
-const TReport = ({ report, setReport }) => {
-    const { user, corrId } = useContext(UserContext);
+const TReport = ({ report, setReport, list }) => {
+    const { user } = useContext(UserContext);
+    const { count } = useContext(MyContext);
+
     const [labels, setLabels] = useState(null);
     const [tasks, setTasks] = useState(null);
     const [mtask, setMTask] = useState(null);
@@ -16,44 +19,37 @@ const TReport = ({ report, setReport }) => {
     const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
 
     useEffect(() => {
+        if (user && list) {
+            setLabels(list.userTasks.map(i => i.date));
+            const t = list.userTasks.map(i => i.tasks.reduce((total, t) => {
+                return total += t.act * Number(t.timer)
+            }, 0))
+            setTasks(t);
 
-        axios.post("http://localhost:7000/tasks", user, {
-            headers: {
-                'x-correlation-id': corrId
-            }
-        })
-        .then(result => {
-                console.log(result.data)
-                setLabels(result.data.userTasks.map(i => i.date));
-                const t = result.data.userTasks.map(i => i.tasks.reduce((total, t) => {
-                    return total += t.act * Number(t.timer)
-                }, 0))
-                console.log(t)
-                setTasks(t);
-
-                const ml = result.data.userTasks.map(i => {
-                    let total = 0
-                    // tasks => j
-                    for (let j = 0; j < i.tasks.length; j++) {
-                        total = total + i.tasks[j].act * i.tasks[j].timer
-                    }
-                    return {
-                        act: total,
-                        month: i.date.split('/')[0]
+            const ml = list.userTasks.map(i => {
+                let total = 0
+                // tasks => j
+                for (let j = 0; j < i.tasks.length; j++) {
+                    total = total + i.tasks[j].act * i.tasks[j].timer
+                }
+                return {
+                    act: total,
+                    month: i.date.split('/')[0]
+                }
+            })
+            const r = month.map((m, index) => {
+                let total = 0
+                ml.map(t => {
+                    if (Number(t.month) === index + 1) {
+                        return total += t.act
                     }
                 })
-                const r = month.map((m, index) => {
-                    let total = 0
-                    ml.map(t => {
-                        if (Number(t.month) === index + 1) {
-                            return total += t.act
-                        }
-                    })
-                    return total
-                });
-                setMTask(r);
-            })
-    }, [])
+                return total
+            });
+            setMTask(r);
+            // })
+        }
+    }, [user, count, list])
 
     // const monthLabel = labels.map(i => i.split('/')[0])
     const data = {
@@ -122,7 +118,6 @@ const TReport = ({ report, setReport }) => {
                         <Bar options={options} data={mdata} className='mb-4' />
                     </Modal.Body>
                 </section>
-
             </Modal>
         </>
     )

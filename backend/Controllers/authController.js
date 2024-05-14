@@ -19,6 +19,7 @@ const failedRoute = (req, res) => {
 const successRoute = (req, res) => {
     if(req.user) {
         //
+        console.log('gcorId: ', req.headers['x-correlation-id']);
         const logResult = {
             userId: req.user.userId,
             statusCode: res.statusCode,
@@ -28,7 +29,8 @@ const successRoute = (req, res) => {
         res.status(200).json({
             success: true,
             message: "successfull",
-            user: req.user
+            user: req.user,
+            corrId: req.headers['x-correlation-id']
             // cookie: req.cookies
         })
     }

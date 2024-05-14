@@ -7,8 +7,8 @@ const config = require('./config');
 const route = require('./Routes/route');
 const PORT = config.server.port;
 require('./middlewares/passport');
-// relic
-require('newrelic');
+//
+require('./tracing');
 
 // logger
 const uuid = require('uuid');
@@ -62,7 +62,6 @@ app.use(passport.session());
 // handlers or routes
 app.use('/', route)
 
-
 if(db) {
     app.listen(PORT, (err, client) => {
         if(err) {
@@ -74,4 +73,5 @@ if(db) {
         console.log('MongoDB database is connected.')        
     })
 }
+
 

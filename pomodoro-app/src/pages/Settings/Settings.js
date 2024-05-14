@@ -3,7 +3,7 @@ import './settings.css'
 import { UserContext } from '../../App';
 
 const Settings = () => {
-    const { user, corrId } = useContext(UserContext);
+    const { user, xCorrId } = useContext(UserContext);
 
     // const user = JSON.parse(sessionStorage.getItem('userInfo'));
     const initialValue = {
@@ -35,7 +35,7 @@ const Settings = () => {
         fetch(`http://localhost:7000/user/updateUser?email=${user.email}`, {
             method: 'POST',
             headers: { 
-                'x-correlation-id': corrId, 
+                'x-correlation-id': xCorrId, 
                 'Content-Type': 'application/json' 
             },
             body: JSON.stringify(profile)

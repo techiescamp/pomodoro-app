@@ -12,7 +12,7 @@ import { UserContext } from '../../../App';
 export const MyTimerContext = createContext();
 
 const TimerUI = ({ finish, setFinish }) => {
-    const { corrId } = useContext(UserContext);
+    const { user, xCorrId } = useContext(UserContext);
     const { todo, setTodo } = useContext(MyContext);
     const [errors, setErrors] = useState(null);
 
@@ -72,6 +72,7 @@ const TimerUI = ({ finish, setFinish }) => {
                 });
                 sessionStorage.setItem('todo', JSON.stringify(tos))
                 setTodo(tos)
+                setTimer(Number(customTimer.timer))
                 handleStop();
             }
         }
@@ -84,12 +85,10 @@ const TimerUI = ({ finish, setFinish }) => {
     useEffect(() => {
         // set date and finished tasks
         sessionStorage.setItem('date', JSON.stringify(new Date().toLocaleString().split(", ")[0]))
-
-        // user info
-        const guser = JSON.parse(sessionStorage.getItem('guser'))
-        const user = (guser ? guser : JSON.parse(sessionStorage.getItem('userInfo')))
+        const prevCheckedtasks = JSON.parse(sessionStorage.getItem('checkedTasks'));
+        const allTasks = prevCheckedtasks !== null ? [...prevCheckedtasks, ...finish] : [...finish];
+        
         // task info
-
         if (finish.length !== 0 && user) {
             try {
                 console.log(finish)
@@ -100,14 +99,13 @@ const TimerUI = ({ finish, setFinish }) => {
                     userTasks: finish,
                 }, {
                     headers: {
-                        'x-correlation-id': corrId
+                        'x-correlation-id': xCorrId
                     }
                 })
                 .then(result => console.log(result.data))
             } catch(err) {
                 setErrors(err.message)
-            }
-            
+            }       
         }
     }, [finish])
 
