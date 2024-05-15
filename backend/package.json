@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npm install",
-    "start": "node --require ./jaegerTrace.js index.js"
+    "start": "nodemon --require ./jaegerTrace.js index.js"
   },
   "author": "sravya veeravalli",
   "license": "ISC",
@@ -27,11 +27,12 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.5.0",
     "mongoose": "^8.3.3",
-    "newrelic": "^11.16.0",
     "nodemailer": "^6.9.13",
     "nodemon": "^3.1.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "prom-client": "^15.1.2",
+    "response-time": "^2.3.2",
     "uuid": "^9.0.1",
     "winston": "^3.13.0"
   }

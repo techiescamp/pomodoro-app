@@ -5,6 +5,7 @@ const config = require('../config');
 const ObjectId = require('mongodb').ObjectId;
 const logger = require('../Logger/logger');
 const logFormat =require('../Logger/logFormat');
+const { databaseResponseTimeHistogram, counter } = require('../Observability/metrics');
 
 async function generateUserId() {
     const uid = `u${Math.ceil(Math.random()*2000)}`;
@@ -17,10 +18,12 @@ async function generateUserId() {
 }
 
 const signup = async (req, res) => {
-    console.log('signup', req.headers['x-correlation-id']);
+    // start metrics
+    const timer = databaseResponseTimeHistogram.startTimer();
 
     const exisitngUser = await User.findOne({ email: req.body.email });
     if (exisitngUser) {
+        timer({operation: "New Registration", success: "false"});
         return res.status(401).json({
             message: "User already registered",
             success: "warning"
@@ -49,7 +52,8 @@ const signup = async (req, res) => {
         statusCode: res.statusCode,
     }
     logger.info('user registered success', logFormat(req, logResult))
-
+    timer({operation: "New Registration", success: "true"});
+    counter.inc();
     return res.status(200).json({
         message: "Registered Successfully",
         xCorrId: req.headers['x-correlation-id'],
@@ -58,7 +62,8 @@ const signup = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    console.log('login', req.headers['x-correlation-id']);
+    //start metrics
+    const timer = databaseResponseTimeHistogram.startTimer();
 
     const exisitngUser = await User.findOne({ email: req.body.email });
     if (exisitngUser) {
@@ -75,6 +80,8 @@ const login = async (req, res) => {
                 statusCode: res.statusCode,
             }
             logger.info('user logged in', logFormat(req, logResult))
+            timer({operation: "User verification", success: "true"})
+            counter.inc()
             return res.status(200).json({
                 token: user_token,
                 success: true
@@ -85,6 +92,8 @@ const login = async (req, res) => {
                 statusCode: res.statusCode,
             }
             logger.info('Password is incorrect', logFormat(req, logResult))
+            timer({operation: "User verification - incorrect password", success: "false"})
+            counter.inc()
             return res.status(401).json({
                 message: "Password is incorrect",
                 success: false
@@ -92,6 +101,8 @@ const login = async (req, res) => {
         }
     } else {
         logger.info('User does not exist. Create new user', logFormat(req, res.statusCode))
+        timer({operation: "User verification - user existed", success: "false"})
+        counter.inc()
         return res.status(401).json({
             message: 'User does not exist. Create new user',
             success: false
@@ -101,13 +112,14 @@ const login = async (req, res) => {
 
 
 const verifyUser = async (req, res) => {
-    console.log('userinfo', req.headers['x-correlation-id']);
-
+    // start metrics
+    const timer = databaseResponseTimeHistogram.startTimer();
     const token = req.headers['x-access-token'];
     if (!token) {
         //
         logger.error('Invalid token', logFormat(req, res.statusCode))
-        
+        timer({operation: "User login - invalid token", success: "false"});
+        counter.inc()
         return res.status(403).json({
             message: "Invalid token",
             auth: false
@@ -116,7 +128,8 @@ const verifyUser = async (req, res) => {
     jwt.verify(token, config.secrets.jwt_key, (err, result) => {
         if (err) {
             logger.error('Invalid token', logFormat(req, res.statusCode))
-
+            timer({operation: "User login - invalid token", success: "false"});
+            counter.inc();
             return res.status(401).json({
                 message: "Invalid user credentials",
                 auth: false
@@ -141,13 +154,16 @@ const verifyUser = async (req, res) => {
                     statusCode: res.statusCode,
                 }
                 logger.info('user info sent to client', logFormat(req, logResult))
-                
+                timer({operation: "User logged in success", success: "true"});
+                counter.inc()
                 res.status(200).json(payload)
             })
     })
 }
 
 const updateUser = async (req, res) => {
+    //start metrics
+    const timer = databaseResponseTimeHistogram.startTimer();
     const reqEmail = req.body.email;
     const reqData = req.body;
     let hashedPassword, update;
@@ -164,12 +180,14 @@ const updateUser = async (req, res) => {
     }
     const user = await User.findOneAndUpdate({ email: reqEmail }, update, { new: true })
     
-    //
+    // logg
     const logResult = {
         userId: user.userId,
         statusCode: res.statusCode,
     }
     logger.info('updated user info', logFormat(req, logResult))
+    timer({operation: "User update profile", success: "true"});
+    counter();
     return res.status(200).json({ message: "updated your profile", result: user })
 }
 
