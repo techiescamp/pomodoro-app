@@ -4,7 +4,6 @@ const logger = require('../Logger/logger');
 const logFormat = require('../Logger/logFormat');
 
 const failedRoute = (req, res) => {
-    //
     const logResult = {
         statusCode: res.statusCode,
     }
@@ -18,8 +17,6 @@ const failedRoute = (req, res) => {
 
 const successRoute = (req, res) => {
     if(req.user) {
-        //
-        console.log('gcorId: ', req.headers['x-correlation-id']);
         const logResult = {
             userId: req.user.userId,
             statusCode: res.statusCode,
@@ -52,7 +49,6 @@ const getGoogleCallback = (req, res) => {
 }
 
 const googleLogout = (req, res) => {
-    //
     const logResult = {
         statusCode: res.statusCode,
         responseTime: res.responseTime

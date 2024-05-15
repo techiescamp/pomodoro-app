@@ -1,6 +1,5 @@
 const nodemailer = require('nodemailer');
 const config = require('../config');
-
 const Subscribers = require('../Model/subscriberModel');
 const logger = require('../Logger/logger');
 const logFormat = require('../Logger/logFormat');
@@ -9,7 +8,6 @@ const { databaseResponseTimeHistogram, counter } = require('../Observability/met
 
 const subscribe = async (req, res) => {
     const timer = databaseResponseTimeHistogram.startTimer();
-
     const exisitngUser = await Subscribers.findOne({email: req.body.email});
     if(exisitngUser) {
         timer({operation: "Subscription - you are already registered", success: 'true'})
@@ -31,7 +29,6 @@ const subscribe = async (req, res) => {
 
 const sendMails = async(req, res) => {
     const timer = databaseResponseTimeHistogram.startTimer();
-
     const { to, subject, html } = req.body;
     const transporter = nodemailer.createTransport({
         host: 'smtppro.zoho.in',

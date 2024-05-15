@@ -7,13 +7,12 @@ const config = require('./config');
 const route = require('./Routes/route');
 const PORT = config.server.port;
 require('./middlewares/passport');
-
 // observability
-
+const { startMetricsServer, responseTimeHistogram } = require('./Observability/metrics');
 // logger
 const uuid = require('uuid');
 const logger = require('./Logger/logger');
-const { startMetricsServer } = require('./Observability/metrics');
+const responseTime = require('response-time')
 
 const app = express();
 
@@ -30,10 +29,9 @@ app.use(cors({
     credentials: true
 }));
 
-// logg middleware
+// log middleware
 app.use((req, res, next) => {
     const correlationId = req.headers['x-correlation-id'] || Math.ceil(Math.random() * 2000);
-    console.log('corr - ', correlationId);
     const requestId = uuid.v4();
 
     req.correlationId = correlationId;
@@ -49,7 +47,6 @@ app.use((req, res, next) => {
     next();
 })
 
-
 // session middleware
 app.use(session({
     secret: config.session.secret,
@@ -61,20 +58,36 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// response time middleware for prometheus
+app.use(
+    responseTime((req, res, time) => {
+      if (req?.route?.path) {
+        responseTimeHistogram.observe(
+          {
+            method: req.method,
+            route: req.route.path,
+            status_code: res.statusCode,
+          },
+          time * 1000
+        );
+      }
+    })
+  );
 
 // handlers or routes
 app.use('/', route)
 
 
-if(db) {
-    app.listen(PORT, (err, client) => {
+app.listen(PORT, (err, client) => {
         if(err) {
-            console.error('Server is not connected', err)
-            // logger.error('Server is not connected', err)
+            // console.error('Server is not connected', err)
+            logger.error('Server is not connected', err)
         }
-        // logger.info('server and database are connected')
-        console.log('server connected at PORT: ', PORT)
-        console.log('MongoDB database is connected.') 
+        // console.log('server connected at PORT: ', PORT)
+        logger.info('server connected at PORT: ', PORT)
+        if(db) {
+            // console.log('MongoDB database is connected.') 
+            logger.info('MongoDB database is connected.') 
+        }
         startMetricsServer();
     })
-}

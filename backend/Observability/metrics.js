@@ -1,5 +1,7 @@
 const client = require('prom-client');
 const express = require('express');
+const config = require('../config');
+const logger = require('../Logger/logger');
 
 const app = express();
 
@@ -31,9 +33,10 @@ function startMetricsServer() {
     });
   
     app.listen(7100, () => {
-      console.log("Metrics server started at http://localhost:7100");
+    //   console.log(`Metrics server started at ${config.observability.metrics_url}`);
+      logger.info(`Metrics server started at ${config.observability.metrics_url}`);
     });
-  }
+}
 
 
 module.exports = { 

@@ -1,3 +1,4 @@
+const config = require('../config');
 const { BasicTracerProvider, SimpleSpanProcessor } = require('@opentelemetry/tracing');
 const { JaegerExporter } = require('@opentelemetry/exporter-jaeger');
 const { Resource } = require('@opentelemetry/resources');
@@ -8,7 +9,7 @@ const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumenta
 // create jaeger exporter
 const exporter = new JaegerExporter({
     serviceName: 'my-pomodoro-app',
-    endpoint: 'http://34.71.163.101:32629/api/traces'
+    endpoint: `${config.observability.jaeger_trace_url}/api/traces`
 })
 
 const provider = new BasicTracerProvider({

@@ -5,9 +5,7 @@ const { databaseResponseTimeHistogram, counter } = require('../Observability/met
 
 const userTasks = async (req, res) => {
     try {
-        console.log('user-tasks', req.headers['x-correlation-id'])
         const timer = databaseResponseTimeHistogram.startTimer();
-
         let existingUser = await TaskTracker.findOne({ "userData.email": req.body.userData.email })
         var payload = {
             userData: req.body.userData,
@@ -39,7 +37,6 @@ const userTasks = async (req, res) => {
                 payload = {
                     userTasks: [...oldTask, newTask]
                 }
-
                 // retain old task and add new task
                 const doc = await TaskTracker.findOneAndUpdate(filter, payload, options)
                 doc.save()
@@ -55,7 +52,6 @@ const userTasks = async (req, res) => {
                 doc.save()
             }
         }
-
         //
         const logResult = {
             emailId: req.body.userData.email,
@@ -75,7 +71,6 @@ const userTasks = async (req, res) => {
 }
 
 const tasks = async (req, res) => {
-    console.log(req.body)
     try {
         const timer = databaseResponseTimeHistogram.startTimer();
         const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email })
