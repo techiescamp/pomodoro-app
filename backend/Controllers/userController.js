@@ -64,8 +64,8 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
     //start metrics
     const timer = databaseResponseTimeHistogram.startTimer();
-
     const exisitngUser = await User.findOne({ email: req.body.email });
+
     if (exisitngUser) {
         const comparePassword = bcrypt.compareSync(req.body.password, exisitngUser.password);
         if (comparePassword) {

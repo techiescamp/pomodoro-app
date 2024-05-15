@@ -104,7 +104,7 @@ const Signup = () => {
                                 required
                             />
                             <p className='text-start' style={{ fontSize: '12px' }}>
-                                By signing up, I accept the DevOpsDock <Link to='/termsConditions'>Terms of Service </Link>
+                                By signing up, I accept the PomodoroApp <Link to='/termsConditions'>Terms of Service </Link>
                                 and acknowledge the <Link to='/privacyPolicy'>Privacy Policy.</Link>
                             </p>
                             <button className='btn btn-primary w-100'>Sign up</button>

@@ -1,7 +1,7 @@
 const client = require('prom-client');
 const express = require('express');
 
-const collectDefaultMetrics = client.collectDefaultMetrics;
+const app = express();
 
 const counter = new client.Counter({
     name: "pomodoro_http_request_count",
@@ -11,7 +11,7 @@ const counter = new client.Counter({
 
 const responseTimeHistogram = new client.Histogram({
     name: "respose_time_duration_seconds",
-    help: "REST API esponse time in seconds",
+    help: "REST API response time in seconds",
     labelNames: ['method', 'route', 'status_code']
 });
 
@@ -21,18 +21,23 @@ const databaseResponseTimeHistogram = new client.Histogram({
     labelNames: ['operation', 'success']
 });
 
-// function startMetrics() {
-//     const collectDefaultMetrics = client.collectDefaultMetrics;
-//         collectDefaultMetrics();
-//         // Metrics endpoint
-//         app.get("/metrics", async (req, res) => {
-//             res.set("Content-Type", client.register.contentType);
-//             res.send(await client.register.metrics());
-//         });
-// }
+function startMetricsServer() {
+    const collectDefaultMetrics = client.collectDefaultMetrics;
+    collectDefaultMetrics();
+  
+    app.get("/metrics", async (req, res) => {
+      res.set("Content-Type", client.register.contentType);
+      return res.send(await client.register.metrics());
+    });
+  
+    app.listen(7100, () => {
+      console.log("Metrics server started at http://localhost:7100");
+    });
+  }
+
 
 module.exports = { 
-    startMetrics: () => collectDefaultMetrics(),
+    startMetricsServer: startMetricsServer,
     counter: counter,
     responseTimeHistogram: responseTimeHistogram,
     databaseResponseTimeHistogram: databaseResponseTimeHistogram,

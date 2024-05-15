@@ -5,19 +5,15 @@ const session = require('express-session');
 const passport = require('passport');
 const config = require('./config');
 const route = require('./Routes/route');
-const metricsRoute = require('./Routes/metricsRoute');
 const PORT = config.server.port;
 require('./middlewares/passport');
 
 // observability
-const client = require('prom-client');
-const responseTime = require('response-time');
-const { startMetrics, counter, responseTimeHistogram } = require('./Observability/metrics');
-
 
 // logger
 const uuid = require('uuid');
 const logger = require('./Logger/logger');
+const { startMetricsServer } = require('./Observability/metrics');
 
 const app = express();
 
@@ -65,43 +61,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-//
-startMetrics();
-
-// telemetry response-time middleware
-app.use(responseTime((req, res, time) => {
-    if(req?.route?.path) {
-        responseTimeHistogram.observe({
-            method: req.method,
-            route: req.route.path,
-            status_code: res.statusCode
-        }, time*1000)
-    }
-}));
-
-// telemtry counter middleware
-app.use((req, res, next) => {
-    if(req?.route?.path) {
-        counter
-            .labels({
-                method: req.method,
-                route: req.route,
-                status_code: res.statusCode
-            })
-            .inc();
-        next();
-    }
-})
 
 // handlers or routes
 app.use('/', route)
-app.use('/metrics', metricsRoute)
-
-// http://localhost:7000/metrics
-// app.get("/metrics", async (req, res) => {
-//     res.set("Content-Type", client.register.contentType);
-//     res.send(await client.register.metrics());
-// });
 
 
 if(db) {
@@ -113,6 +75,6 @@ if(db) {
         // logger.info('server and database are connected')
         console.log('server connected at PORT: ', PORT)
         console.log('MongoDB database is connected.') 
-        // startMetrics();
+        startMetricsServer();
     })
 }

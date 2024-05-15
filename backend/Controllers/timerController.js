@@ -1,10 +1,12 @@
 const logger = require('../Logger/logger');
 const logFormat = require('../Logger/logFormat');
 const TaskTracker = require('../Model/timerModel');
+const { databaseResponseTimeHistogram, counter } = require('../Observability/metrics');
 
 const userTasks = async (req, res) => {
     try {
         console.log('user-tasks', req.headers['x-correlation-id'])
+        const timer = databaseResponseTimeHistogram.startTimer();
 
         let existingUser = await TaskTracker.findOne({ "userData.email": req.body.userData.email })
         var payload = {
@@ -59,13 +61,15 @@ const userTasks = async (req, res) => {
             emailId: req.body.userData.email,
             statusCode: res.statusCode,
         }
-
         logger.info('Created user-task', logFormat(req, logResult));
-
+        timer({operation: "Tasks are saved in database", success: 'true'})
+        counter.inc()
         return res.send('Submitted');
     }
     catch (err) {
         logger.error('Error exception in user-tasks', err);
+        timer({operation: 'Exception error', success: 'false'})
+        counter.inc()
         res.send('User needs to login to save tasks')
     }
 }
@@ -73,6 +77,7 @@ const userTasks = async (req, res) => {
 const tasks = async (req, res) => {
     console.log(req.body)
     try {
+        const timer = databaseResponseTimeHistogram.startTimer();
         const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email })
         const logResult = {
             userId: req.body.useId,
@@ -82,12 +87,18 @@ const tasks = async (req, res) => {
         if (existingUser) {
             //
             logger.info('sent task-list to browser', logFormat(req, logResult));
+            timer({operation: 'Tasks are sent to client', success: 'true'})
+            counter.inc()
             return res.send(existingUser)
         } else {
+            timer({operation: 'Failed to sent Tasks to the client', success: 'false'})
+            counter.inc()
             logger.error('Wrong email-id. Please log again', logFormat(req, req.body.email))
         }
     }
     catch (err) {
+        timer({operation: 'Exception error', success: 'false'})
+        counter.inc()
         logger.error('Tasklist did not sent to client', logFormat(req, err))
     }
 }

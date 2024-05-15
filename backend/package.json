@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npm install",
-    "start": "nodemon --require ./jaegerTrace.js index.js"
+    "start": "nodemon --require ./Observability/jaegerTrace.js index.js"
   },
   "author": "sravya veeravalli",
   "license": "ISC",
@@ -25,8 +25,8 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "^6.5.0",
-    "mongoose": "^8.3.3",
+    "mongodb": "^6.6.1",
+    "mongoose": "^8.3.5",
     "nodemailer": "^6.9.13",
     "nodemon": "^3.1.0",
     "passport": "^0.7.0",

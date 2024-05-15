@@ -8,7 +8,6 @@ const logFormat = (req, res) => {
         statusCode: res.statusCode,
         responseTime: res.responsetime,
         ipAddress: req.ip,
-        component: req.component
     }
 }
 

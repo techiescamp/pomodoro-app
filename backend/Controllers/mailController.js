@@ -4,24 +4,34 @@ const config = require('../config');
 const Subscribers = require('../Model/subscriberModel');
 const logger = require('../Logger/logger');
 const logFormat = require('../Logger/logFormat');
+const { databaseResponseTimeHistogram, counter } = require('../Observability/metrics');
+
 
 const subscribe = async (req, res) => {
+    const timer = databaseResponseTimeHistogram.startTimer();
+
     const exisitngUser = await Subscribers.findOne({email: req.body.email});
     if(exisitngUser) {
+        timer({operation: "Subscription - you are already registered", success: 'true'})
+        counter.inc()
         return res.send('Already regsitered to our newletter :)');
+    } else {
+        Subscribers.create({email: req.body['email']})
+        const logResult = {
+            emailId: req.body.email,
+            statusCode: res.statusCode
+        }
+        timer({operation: "Subscription - user subscribed successfully", success: 'true'})
+        counter.inc()
+        logger.info('User subscribed to our pomodoro app', logFormat(req, logResult))
+        return res.send('Thank you for subscribing to our newsletter!!');
     }
-    await Subscribers.create({email: req.body['email']})
-    //
-    const logResult = {
-        emailId: req.body.email,
-        statusCode: res.statusCode
-    }
-    logger.info('User subscribed to our pomodoro app', logFormat(req, logResult))
-    
-    return res.send('Thank you for subscribing to our newsletter!!');
+
 }
 
 const sendMails = async(req, res) => {
+    const timer = databaseResponseTimeHistogram.startTimer();
+
     const { to, subject, html } = req.body;
     const transporter = nodemailer.createTransport({
         host: 'smtppro.zoho.in',
@@ -49,7 +59,8 @@ const sendMails = async(req, res) => {
                 statusCode: res.statusCode
             }
             logger.info('Subscription Email sent to client', logFormat(req, logResult))
-
+            timer({operation: "Subscription - sent to user", success: 'true'})
+            counter.inc()
             return res.status(200).send("Sent mail successfully")
         }
     })

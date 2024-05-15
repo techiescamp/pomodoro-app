@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-
 const config = {
     server: {
         port: process.env.PORT
@@ -27,6 +26,5 @@ const config = {
         password: process.env.ZOHO_PASSWORD
     }
 }
-
 
 module.exports = config;

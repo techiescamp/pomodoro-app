@@ -25,7 +25,6 @@ const successRoute = (req, res) => {
             statusCode: res.statusCode,
         }
         logger.info('yay user logged!!!', logFormat(req, logResult))
-        
         res.status(200).json({
             success: true,
             message: "successfull",
