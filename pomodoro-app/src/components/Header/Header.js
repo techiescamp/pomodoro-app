@@ -9,38 +9,21 @@ function Header() {
 
   const { user, setUser, setXCorrId } = useContext(UserContext);
   const usersession = JSON.parse(sessionStorage.getItem('userInfo')) || null;
+  const gusersession = JSON.parse(sessionStorage.getItem('guser')) || null;
 
   useEffect(() => {
+    const getUser = async () => {
       if(usersession) {
         setUser(usersession)
-        setXCorrId(usersession.setXCorrId)
+        // setXCorrId(usersession.xCorrId)
+      } else if(gusersession) {
+        setUser(usersession)
+        // setXCorrId(usersession.setXCorrId)
       } else {
-        try {
-          fetch('http://localhost:7000/auth/login/success', {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'x-correlation-id': `transaction-${Math.ceil(Math.random() * 10)}`,
-              "Content-Type": "application/json",
-              "Access-Control-Allow-Credentials": true
-            }
-          })
-          .then(res => res.json())
-          .then(data => {
-            console.log('guser: ', data)
-            const guser = {
-              displayName: data.user.displayName,
-              email: data.user.email
-            }
-            sessionStorage.setItem('guser', JSON.stringify(guser))
-            setUser(data.user)
-            setXCorrId(data.corrId);
-          })
-        }
-        catch(err) {
-          console.log(err.message)
-        }
-      } 
+        setUser(null)
+      }
+    }
+    getUser();
   },[loc])
 
   const handlelogout = () => {

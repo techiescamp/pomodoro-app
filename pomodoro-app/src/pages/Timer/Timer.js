@@ -68,7 +68,7 @@ const Timer = () => {
                         </Dropdown>
                     </div>
                     <hr className='w-75 mx-auto text-white' />
-                    
+                     
                     <TaskUI />
 
                     {/* Add task Button */}

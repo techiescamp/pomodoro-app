@@ -1,11 +1,7 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
-import { UserContext } from '../../App';
-
 
 const Signup = () => {
-    const { corrId } = useContext(UserContext);
-
     const navigate = useNavigate();
     const [status, setStatus] = useState(false);
     const [userDetails, setUserDetails] = useState({
@@ -24,7 +20,6 @@ const Signup = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const cid = `transaction-${Math.ceil(Math.random()*200)}`;
-
         fetch("http://localhost:7000/user/signup", {
             method: 'POST',
             body: JSON.stringify(userDetails),
@@ -38,7 +33,6 @@ const Signup = () => {
                 throw new Error("Not registered")
             })
             .then(data => {
-                console.log('signup: ', data)
                 setStatus(data);
                 navigate("/login", {state: data.xCorrId})
             });

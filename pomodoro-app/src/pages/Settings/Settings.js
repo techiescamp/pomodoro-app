@@ -64,7 +64,6 @@ const Settings = () => {
 
     const handleTimerForm = (e) => {
         e.preventDefault()
-        console.log(customTime)
         sessionStorage.setItem('customTimer', JSON.stringify(customTime));
         setMsg("Updated timer successfully")
         closeBtn()

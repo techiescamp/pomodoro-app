@@ -8,7 +8,6 @@ const failedRoute = (req, res) => {
         statusCode: res.statusCode,
     }
     logger.error('Failed to route the login credentials', logFormat(req, logResult))
-    
     res.status(401).json({
         success: false,
         message: "failure"
@@ -30,23 +29,43 @@ const successRoute = (req, res) => {
             // cookie: req.cookies
         })
     }
-    
 }
 
 // To initiate the Google OAuth2.0 authentication flow
-const getGoogleAuth = (req, res) => {
-    passport.authenticate('google', {
-        scope: ['profile', 'email']
-    })
+const getGoogleAuth = (req, res, next) => {
+    passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next)
 }
 
 // callback URL for handling the OAuth2.0 response
-const getGoogleCallback = (req, res) => {
-    passport.authenticate('google', {
-        successRedirect: config.urls.baseUrl,
-        failureRedirect: '/auth/login/failed'
-    })
-}
+const getGoogleCallback = (req, res, next) => {
+    passport.authenticate('google', { 
+      successRedirect: config.urls.baseUrl,
+      failureRedirect: '/auth/login/failed' 
+    })(req, res, next);
+};
+
+// const getGoogleCallback = (req, res, next) => {
+//     console.log('Google OAuth callback invoked');
+//     passport.authenticate('google', { failureRedirect: '/auth/login/failed' }, (err, user, info) => {
+//         if(err) { 
+//             console.error('Authentication error:', err)
+//             return next(err);
+//         }
+//         if(!user) {
+//             console.error('user error:', info);
+//             return res.redirect('/auth/login/failed');
+//         }
+//         req.logIn(user, (err) => {
+//           if (err) {
+//             console.error('Login error:', err);
+//             return next(err);
+//           } 
+//           console.log('User authenticated:', user);
+//           res.redirect(config.urls.baseUrl);
+//         });
+//     })(req, res, next);
+// };
+
 
 const googleLogout = (req, res) => {
     const logResult = {
@@ -54,7 +73,6 @@ const googleLogout = (req, res) => {
         responseTime: res.responseTime
     }
     logger.info('oops logged out', logFormat(req, logResult));
-
     req.logout(function(err) {
         if(err) return next(err)
         res.redirect(config.urls.baseUrl)

@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { userTasks, tasks } = require('../Controllers/timerController');
+const { checkTodayTasks, userTasks, tasks } = require('../Controllers/timerController');
 const { signup, login, verifyUser, updateUser } = require('../Controllers/userController');
 const { failedRoute, successRoute, getGoogleAuth, googleLogout, getGoogleCallback } = require('../Controllers/authController');
 const { sendMails, subscribe } = require('../Controllers/mailController');
@@ -8,6 +8,7 @@ const { sendMails, subscribe } = require('../Controllers/mailController');
 const route = express.Router();
 
 // timer route
+route.post('/checkTodayTasks', checkTodayTasks)
 route.post('/user-tasks', userTasks);
 route.post('/tasks', tasks);
 
@@ -21,7 +22,7 @@ route.post('/user/updateUser', updateUser);
 // google routes
 route.get('/auth/login/failed', failedRoute);
 route.get('/auth/login/success', successRoute);
-route.get('/auth/goolge', getGoogleAuth);
+route.get('/auth/google', getGoogleAuth);
 route.get('/auth/google/callback', getGoogleCallback);
 route.get('/auth/logout', googleLogout);
 

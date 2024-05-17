@@ -9,7 +9,13 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        validate: {
+            validator: function (value) {
+              // Validate password only if it's present
+              return value != null ? value.length > 6 : true;
+            },
+            message: 'Password should be longer than 6 characters'
+        },
     },
     avatar: {
         data: String,

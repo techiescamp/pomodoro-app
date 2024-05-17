@@ -79,22 +79,20 @@ const TimerUI = ({ finish, setFinish }) => {
         return () => {
             clearInterval(intervalId)
         }
-
-    }, [isActive, timer])
+}, [isActive, timer])
 
     useEffect(() => {
         // set date and finished tasks
-        sessionStorage.setItem('date', JSON.stringify(new Date().toLocaleString().split(", ")[0]))
+        sessionStorage.setItem('date', JSON.stringify(new Date().toLocaleString('en-US').split(", ")[0]))
         const prevCheckedtasks = JSON.parse(sessionStorage.getItem('checkedTasks'));
         const allTasks = prevCheckedtasks !== null ? [...prevCheckedtasks, ...finish] : [...finish];
+        console.log('alltasks: ', allTasks);
         
         // task info
         if (finish.length !== 0 && user) {
             try {
-                console.log(finish)
                 axios.post("http://localhost:7000/user-tasks", {
                     date: JSON.parse(sessionStorage.getItem('date')),
-                    isFinished: true,
                     userData: user,
                     userTasks: finish,
                 }, {

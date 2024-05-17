@@ -22,16 +22,13 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const cid = xCorrId || `transaction-${Math.ceil(Math.random()*10)}`;
+        const cid = xCorrId || `transaction-${Math.ceil(Math.random()*500)}`;
         axios.post("http://localhost:7000/user/login", userLogin, {
             headers: {
                 'x-correlation-id': cid
             }
         })
         .then(res => {
-            // sessionStorage.setItem('token', JSON.stringify(res.data));
-            //
-            console.log(res.data.token)
             axios.post('http://localhost:7000/user/verifyUser', res.data, {
                 headers: {
                     'x-correlation-id': cid,
@@ -39,7 +36,6 @@ const Login = () => {
                 }
             })
             .then(res => {
-                console.log(res.data)
                 setStatus(res.data)
                 sessionStorage.setItem('userInfo', JSON.stringify(res.data))
                 navigate('/')
@@ -53,25 +49,6 @@ const Login = () => {
             password: ''
         });
     }
-
-    // const user = (usertoken) => {
-    //     axios.post("http://localhost:7000/user/userInfo", usertoken, {
-    //         headers: {
-    //             'x-correlation-id': corrId,
-    //             "x-access-token": usertoken.token,
-    //         }
-    //     }).then(res => {
-    //         const result = res.data.result
-    //         const login = {
-    //             userId: result.userId,
-    //             displayName: result.displayName,
-    //             avatar: result.avatar,
-    //             email: result.email
-    //         }
-    //         sessionStorage.setItem('userInfo', JSON.stringify(login));
-    //         navigate('/')
-    //     });
-    // }
 
     const loginGoogle = () => {
         window.open("http://localhost:7000/auth/google", "_self")

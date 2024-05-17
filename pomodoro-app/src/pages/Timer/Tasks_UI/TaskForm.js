@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { MyContext } from '../Timer';
 import TaskButtons from './TaskButtons';
 import '../Timer.css';
@@ -7,7 +7,35 @@ import { UserContext } from '../../../App';
 
 const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
     const { todo, setTodo } = useContext(MyContext);
-    const { xCorrId } = useContext(UserContext);
+    const { user, xCorrId } = useContext(UserContext);
+    const todayDate = JSON.parse(sessionStorage.getItem('date'));
+    const checkedTasks = sessionStorage.getItem('checkedTasks') ? JSON.parse(sessionStorage.getItem('checkedTasks')) : [];
+    const todaysTask = sessionStorage.getItem('todaysTask') ? JSON.parse(sessionStorage.getItem('todaysTask')) : [];
+
+    useEffect(() => {
+         // if user logged again today ? integrate old tasks to today's tasks 
+        if(user) {
+            axios.post('http://localhost:7000/checkTodayTasks', {date: todayDate, email: user.email}, {
+                headers: {
+                    'x-correlation-id': xCorrId 
+                }
+            })
+            .then(res => {
+                // if(checkedTasks || todaysTask) {
+                    const combinedTasks = [...res.data, ...checkedTasks, ...todaysTask];
+                    const uniqueTask = combinedTasks.filter((obj, index) => index === combinedTasks.findIndex(o => o.id === obj.id)) 
+                    sessionStorage.setItem('todaysTask', JSON.stringify(uniqueTask))
+                // }
+                
+                // if(checkedTasks) {
+                //     sessionStorage.setItem('todaysTask', JSON.stringify([...res.data, ...checkedTasks]))
+                // } else {
+                //     sessionStorage.setItem('todaysTask', JSON.stringify([...res.data]))
+                // }
+            })
+            
+        }
+    },[todayDate, checkedTasks, todaysTask, user])
 
     const handleChange = (e) => {
         setForm({
@@ -16,28 +44,24 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
         })
     }
 
+    function generateUniqueId() {
+        const timestamp = Date.now().toString(36)
+        const randString = Math.floor(Math.random().toString(8));
+        console.log(`T${timestamp + randString}`)
+        return `T${timestamp + randString}`
+    }
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        // if user logged again today ? integrate old tasks to today's tasks 
-        const todayDate = sessionStorage.getItem('date');
-        axios.post('http://localhost:7000/checkTodayTasks', todayDate, {
-            headers: {
-                'x-correlation-id': xCorrId 
-            }
-        })
-        .then(res => {
-            console.log(res.data);
-        })
-
-        // or if new login today ?
-        const checkedTasks = sessionStorage.getItem('checkedTasks') ? JSON.parse(sessionStorage.getItem('checkedTasks')) : null;
-        if(todo) {
-            setTodo([...todo, form]);  
-            sessionStorage.setItem('todo', JSON.stringify([...todo, form]));
+        if (todo) {
+            const newTodo = {
+                ...form,
+                id: generateUniqueId(), // Assigning sequential id based on the length of the todo array
+            };
+            setTodo(todo ? [...todo, newTodo] : [newTodo]);
+            sessionStorage.setItem('todo', JSON.stringify(todo ? [...todo, newTodo] : [newTodo]));
         }
-        let totalLength = checkedTasks.length + todo.length || todo.length;
         setForm({
-            id: totalLength + 1 || 0,
             title: '',
             description: '',
             project_title: '',
@@ -59,7 +83,6 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
         sessionStorage.setItem('todo', JSON.stringify(newTodo));
         setIsUpdate(false)
         setForm({
-            id: todo.length + 1,
             title: '',
             description: '',
             project_title: '',

@@ -8,7 +8,8 @@ import ErrorPage from './ErrorPage';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import React, { createContext, useEffect, useState } from 'react';
-// import {v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
+
 
 export const UserContext = createContext();
 
@@ -17,14 +18,39 @@ function App() {
   const [xCorrId, setXCorrId] = useState(null);
 
   const loc = useLocation();
-  
+  const getUser = JSON.parse(sessionStorage.getItem('userinfo')) || null;
+
   useEffect(() => {
-    const getUser = JSON.parse(sessionStorage.getItem('userinfo')) || null;
-    if(getUser) {
-      setUser(getUser);
-      setXCorrId(getUser.xCorrId);
+    const getUserInfo = async() => {
+      try {
+        if (getUser) {
+          setUser(getUser);
+          setXCorrId(getUser.xCorrId);
+        } else {
+          const correlationId = `transaction-${Math.ceil(Math.random() * 500)}`;
+          const response = await axios.get('http://localhost:7000/auth/login/success', {
+            withCredentials: 'include',
+            headers: {
+              'x-correlation-id': correlationId,
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Credentials': true
+            }
+          })
+          const { data } = response;
+          const guser = {
+            displayName: data.user.displayName,
+            email: data.user.email
+          }
+          sessionStorage.setItem('guser', JSON.stringify(guser))
+          setUser(data.user)
+          setXCorrId(data.corrId);
+        }
+      } catch(err) {
+        console.error('Network error: ', err)
+      }
     }
-  },[loc])
+    getUserInfo()
+  }, [loc])
 
   return (
     <UserContext.Provider value={{ user, setUser, xCorrId, setXCorrId }}>

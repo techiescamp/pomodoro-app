@@ -22,8 +22,6 @@ const TNavbar = () => {
 
     useEffect(() => {
         if (user) {
-            console.log('navbar-list')
-            console.log(xCorrId);
             axios.post("http://localhost:7000/tasks", user, {
                 headers: {
                     'x-correlation-id': xCorrId

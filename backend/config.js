@@ -19,7 +19,8 @@ const config = {
         secret: process.env.SESSION_SECRET
     },
     urls: {
-        baseUrl: process.env.BASE_URL
+        baseUrl: process.env.BASE_URL,
+        google_redirect_success: process.env.GOOGLE_REDIRECT_SUCCESS
     },
     mail: {
         email: process.env.ZOHO_MAIL,
