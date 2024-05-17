@@ -4,6 +4,7 @@ const TaskTracker = require('../Model/timerModel');
 const { databaseResponseTimeHistogram, counter } = require('../Observability/metrics');
 
 const checkTodayTasks = async (req, res) => {
+    const timer = databaseResponseTimeHistogram.startTimer();
     const presentDate = new Date().toLocaleString('en-US').split(", ")[0]
     if(presentDate === req.body.date) {
         let existingUser = await TaskTracker.find({"userTasks.date": req.body.date, "userData.email": req.body.email }, {"userTasks": 1})
@@ -13,6 +14,8 @@ const checkTodayTasks = async (req, res) => {
         const allUserTasks = userTasksArrays.flat();
         // Filtering userTasks objects based on the presentDate
         const userTasksForPresentDate = allUserTasks.filter(task => task.date === presentDate);
+        timer({operation: 'Checking todays tasks', success: 'true'});
+        counter.inc()
         res.send(userTasksForPresentDate[0] ? userTasksForPresentDate[0].tasks : null);
     }
 }
@@ -47,26 +50,12 @@ const userTasks = async (req, res) => {
                     tasks: [...req.body.userTasks]
                 }
                 existingUser.userTasks.push(newTask)
-                // payload = {
-                //     userTasks: [...oldTask, newTask]
-                // }
-                // // retain old task and add new task
-                // const doc = await TaskTracker.findOneAndUpdate(filter, payload, options)
-                // doc.save()
             } else {
                 // if same date or date is found
                 const task = existingUser.userTasks[oldT].tasks;
                 task.push(...payload.userTasks[0].tasks);
                 const uniqueTasks = task.filter((obj, index) => index === task.findIndex(o => o.id === obj.id))
                 existingUser.userTasks[oldT].tasks = uniqueTasks;
-                // const targetDate = req.body.date.split(' ')[0]
-                // // replace old date tasks...
-                // const doc = await TaskTracker.findOneAndUpdate(
-                //     { 'userTasks.date': targetDate },
-                //     { $set: { 'userTasks.$.tasks': req.body.userTasks } },
-                //     { new: true }
-                // )
-                // doc.save()
             }
             const doc = await TaskTracker.findOneAndUpdate(filter, existingUser, options);
             doc.save();
@@ -99,7 +88,6 @@ const tasks = async (req, res) => {
             statusCode: res.statusCode,
         }
         if (existingUser) {
-            //
             logger.info('sent task-list to browser', logFormat(req, logResult));
             timer({operation: 'Tasks are sent to client', success: 'true'})
             counter.inc()

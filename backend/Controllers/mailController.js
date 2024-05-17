@@ -9,9 +9,15 @@ const { databaseResponseTimeHistogram, counter } = require('../Observability/met
 const subscribe = async (req, res) => {
     const timer = databaseResponseTimeHistogram.startTimer();
     const exisitngUser = await Subscribers.findOne({email: req.body.email});
+    const logResult = {
+        userId: exisitngUser.userId,
+        statusCode: res.statusCode,
+    }
     if(exisitngUser) {
         timer({operation: "Subscription - you are already registered", success: 'true'})
         counter.inc()
+        
+        logger.info('User already subscribed to our pomodoro app', logFormat(req, logResult))
         return res.send('Already regsitered to our newletter :)');
     } else {
         Subscribers.create({email: req.body['email']})
@@ -47,10 +53,14 @@ const sendMails = async(req, res) => {
     }
     transporter.sendMail(mailOptions, (err, info) => {
         if(err) {
+            const logResult = {
+                emailId: to,
+                statusCode: res.statusCode
+            }
+            logger.error('Failed to sent email subscription', logFormat(req, logResult))
             console.log("Error in sending mail", err)
         }
         else {
-            //
             const logResult = {
                 emailId: to,
                 statusCode: res.statusCode

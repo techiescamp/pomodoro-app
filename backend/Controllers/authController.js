@@ -20,7 +20,7 @@ const successRoute = (req, res) => {
             userId: req.user.userId,
             statusCode: res.statusCode,
         }
-        logger.info('yay user logged!!!', logFormat(req, logResult))
+        logger.info('User logged via google account', logFormat(req, logResult))
         res.status(200).json({
             success: true,
             message: "successfull",
@@ -44,35 +44,12 @@ const getGoogleCallback = (req, res, next) => {
     })(req, res, next);
 };
 
-// const getGoogleCallback = (req, res, next) => {
-//     console.log('Google OAuth callback invoked');
-//     passport.authenticate('google', { failureRedirect: '/auth/login/failed' }, (err, user, info) => {
-//         if(err) { 
-//             console.error('Authentication error:', err)
-//             return next(err);
-//         }
-//         if(!user) {
-//             console.error('user error:', info);
-//             return res.redirect('/auth/login/failed');
-//         }
-//         req.logIn(user, (err) => {
-//           if (err) {
-//             console.error('Login error:', err);
-//             return next(err);
-//           } 
-//           console.log('User authenticated:', user);
-//           res.redirect(config.urls.baseUrl);
-//         });
-//     })(req, res, next);
-// };
-
-
 const googleLogout = (req, res) => {
     const logResult = {
         statusCode: res.statusCode,
         responseTime: res.responseTime
     }
-    logger.info('oops logged out', logFormat(req, logResult));
+    logger.info('User logged out!', logFormat(req, logResult));
     req.logout(function(err) {
         if(err) return next(err)
         res.redirect(config.urls.baseUrl)
