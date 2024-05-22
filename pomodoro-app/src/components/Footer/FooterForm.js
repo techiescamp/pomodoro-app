@@ -12,7 +12,7 @@ const FooterForm = () => {
 
     const handleFooterSubmit = async (e) => {
         e.preventDefault();
-        const sent = await axios.post("http://localhost:7000/subscribe", subscribeEmail)
+        const sent = await axios.post("https://pomodoro-app-wztg.onrender.com/subscribe", subscribeEmail)
         alert(sent.data)
         const mailBody = {
             to: subscribeEmail,

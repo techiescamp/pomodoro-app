@@ -32,7 +32,7 @@ const Settings = () => {
         if(profile.password !== '') {
             alert("Are you sure to change to new password ?")
         }
-        fetch(`http://localhost:7000/user/updateUser?email=${user.email}`, {
+        fetch(`https://pomodoro-app-wztg.onrender.com/user/updateUser?email=${user.email}`, {
             method: 'POST',
             headers: { 
                 'x-correlation-id': xCorrId, 

@@ -32,7 +32,7 @@ function startMetricsServer() {
       return res.send(await client.register.metrics());
     });
   
-    app.listen(7100, () => {
+    app.listen(7100, "192.168.0.104", () => {
     //   console.log(`Metrics server started at ${config.observability.metrics_url}`);
       logger.info(`Metrics server started at ${config.observability.metrics_url}`);
     });
