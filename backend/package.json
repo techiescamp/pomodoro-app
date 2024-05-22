@@ -1,0 +1,39 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "backend for pomodoro app",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm install",
+    "start": "nodemon --require ./Observability/jaegerTrace.js index.js"
+  },
+  "author": "sravya veeravalli",
+  "license": "ISC",
+  "dependencies": {
+    "@opentelemetry/api": "^1.8.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.46.0",
+    "@opentelemetry/exporter-jaeger": "^1.24.1",
+    "@opentelemetry/resources": "^1.24.1",
+    "@opentelemetry/sdk-metrics": "^1.24.0",
+    "@opentelemetry/sdk-node": "^0.51.1",
+    "@opentelemetry/sdk-trace-node": "^1.24.0",
+    "@opentelemetry/semantic-conventions": "^1.24.1",
+    "@opentelemetry/tracing": "^0.24.0",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.6.1",
+    "mongoose": "^8.3.5",
+    "nodemailer": "^6.9.13",
+    "nodemon": "^3.1.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "prom-client": "^15.1.2",
+    "response-time": "^2.3.2",
+    "uuid": "^9.0.1",
+    "winston": "^3.13.0"
+  }
+}
