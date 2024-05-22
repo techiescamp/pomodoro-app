@@ -91,7 +91,7 @@ const TimerUI = ({ finish, setFinish }) => {
         // task info
         if (finish.length !== 0 && user) {
             try {
-                axios.post("https://pomodoro-app-wztg.onrender.com/user-tasks", {
+                axios.post("http://localhost:7000/user-tasks", {
                     date: JSON.parse(sessionStorage.getItem('date')),
                     userData: user,
                     userTasks: finish,

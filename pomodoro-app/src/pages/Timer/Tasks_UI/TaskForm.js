@@ -15,7 +15,7 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
     useEffect(() => {
          // if user logged again today ? integrate old tasks to today's tasks 
         if(user) {
-            axios.post('https://pomodoro-app-wztg.onrender.com/checkTodayTasks', {date: todayDate, email: user.email}, {
+            axios.post('http://localhost:7000/checkTodayTasks', {date: todayDate, email: user.email}, {
                 headers: {
                     'x-correlation-id': xCorrId 
                 }

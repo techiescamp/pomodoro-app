@@ -23,13 +23,13 @@ const Login = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const cid = xCorrId || `transaction-${Math.ceil(Math.random()*500)}`;
-        axios.post("https://pomodoro-app-wztg.onrender.com/user/login", userLogin, {
+        axios.post("http://localhost:7000/user/login", userLogin, {
             headers: {
                 'x-correlation-id': cid
             }
         })
         .then(res => {
-            axios.post('https://pomodoro-app-wztg.onrender.com/user/verifyUser', res.data, {
+            axios.post('http://localhost:7000/user/verifyUser', res.data, {
                 headers: {
                     'x-correlation-id': cid,
                     'x-access-token': res.data.token

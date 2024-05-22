@@ -22,7 +22,7 @@ const TNavbar = () => {
 
     useEffect(() => {
         if (user) {
-            axios.post("https://pomodoro-app-wztg.onrender.com/tasks", user, {
+            axios.post("http://localhost:7000/tasks", user, {
                 headers: {
                     'x-correlation-id': xCorrId
                 }

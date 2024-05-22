@@ -20,7 +20,7 @@ const Signup = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const cid = `transaction-${Math.ceil(Math.random()*200)}`;
-        fetch("https://pomodoro-app-wztg.onrender.com/user/signup", {
+        fetch("http://localhost:7000/user/signup", {
             method: 'POST',
             body: JSON.stringify(userDetails),
             headers: {
