@@ -1,5 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+import config from '../../config';
+
+const apiUrl = config.development.apiUrl;
 
 const Signup = () => {
     const navigate = useNavigate();
@@ -20,7 +23,7 @@ const Signup = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const cid = `transaction-${Math.ceil(Math.random()*200)}`;
-        fetch("http://localhost:7000/user/signup", {
+        fetch(`${apiUrl}/user/signup`, {
             method: 'POST',
             body: JSON.stringify(userDetails),
             headers: {
@@ -45,7 +48,7 @@ const Signup = () => {
     }
 
     const registerGoogle = () => {
-        window.open('http://localhost:7000/auth/google', "_self");
+        window.open(`${apiUrl}/auth/google`, "_self");
     }
 
     const inlineStyle = {

@@ -1,11 +1,13 @@
 import React, { useContext, useState } from 'react';
 import './settings.css'
 import { UserContext } from '../../App';
+import config from '../../config';
+
+const apiUrl = config.development.apiUrl
 
 const Settings = () => {
     const { user, xCorrId } = useContext(UserContext);
 
-    // const user = JSON.parse(sessionStorage.getItem('userInfo'));
     const initialValue = {
         displayName: user.displayName,
         email: user.email,
@@ -32,7 +34,7 @@ const Settings = () => {
         if(profile.password !== '') {
             alert("Are you sure to change to new password ?")
         }
-        fetch(`http://localhost:7000/user/updateUser?email=${user.email}`, {
+        fetch(`${apiUrl}/user/updateUser?email=${user.email}`, {
             method: 'POST',
             headers: { 
                 'x-correlation-id': xCorrId, 

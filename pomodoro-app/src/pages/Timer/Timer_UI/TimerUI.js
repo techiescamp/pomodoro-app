@@ -1,33 +1,53 @@
-import React, { useEffect, useState, createContext, useContext } from 'react'
-import useSound from 'use-sound';
+import React, { useEffect, useState, createContext, useContext, useCallback, useMemo } from 'react'
 import axios from 'axios';
 import { MyContext } from '../Timer';
 import clickSound from '../../../assets/audio/Mouse_Click.mp3';
 import clockAlarm from '../../../assets/audio/clock-alarm.mp3';
 import '../Timer.css';
+import config from '../../../config';
 import TimerNav from './TimerNav';
 import TimerButtons from './TimerButtons';
 import { UserContext } from '../../../App';
 
 export const MyTimerContext = createContext();
+const apiUrl = config.development.apiUrl
 
 const TimerUI = ({ finish, setFinish }) => {
     const { user, xCorrId } = useContext(UserContext);
     const { todo, setTodo } = useContext(MyContext);
-    const [errors, setErrors] = useState(null);
+    const [message, setMessage] = useState(null);
 
     let customTimer = sessionStorage.getItem('customTimer') ? JSON.parse(sessionStorage.getItem('customTimer')) : null;
 
     const { setCount } = useContext(MyContext);
     const [timer, setTimer] = useState(() => {
-        return customTimer ? customTimer.timer*60 : 25 * 60
+        return customTimer ? customTimer.timer * 60 : 25 * 60
     });
     const [timerName, setTimerName] = useState('timer');
     const [isActive, setIsActive] = useState(false);
-    const [playSound1] = useSound(clickSound);
-    const [playSound2] = useSound(clockAlarm);
+
+    const clickAudio = useMemo(()=> new Audio(clickSound),[]);
+    const alarmAudio = useMemo(() => new Audio(clockAlarm),[]);
 
     const [unTask, setUnTask] = useState({});
+
+    const handleStop = useCallback(() => {
+        if(clickAudio) {
+            clickAudio.play();
+        }
+        if (timer >= 15 * 60) {
+            setTimer(customTimer ? customTimer.timer * 60 : 25 * 60);
+            setIsActive(false);
+        } else if (timer >= 5 * 60 && timer <= 15 * 60) {
+            setTimer(customTimer ? customTimer.long_break * 60 : 15 * 60);
+            setIsActive(false);
+        } else if (timer <= 5 * 60) {
+            setTimer(customTimer ? customTimer.short_break * 60 : 5 * 60);
+            setIsActive(false);
+        }
+        const stop = document.getElementById('stop');
+        stop.style.display = 'none';
+    }, [timer, customTimer, setIsActive, clickAudio]);
 
     useEffect(() => {
         // finds the first uncompleted task and setstate for uncomplete task
@@ -39,10 +59,10 @@ const TimerUI = ({ finish, setFinish }) => {
             setCount(prev => prev + 1)
             setFinish(newtodo)
             if(todo.length === newtodo.length) {
-                alert("Yay you completed all tasks !!");
+                setMessage("Yay you completed all tasks !!");
             }
         }
-    }, [todo])
+    }, [todo, setCount, setFinish])
 
     useEffect(() => {
         let intervalId;
@@ -54,7 +74,9 @@ const TimerUI = ({ finish, setFinish }) => {
             }, 1000);
             // 
             if (timer === 0 && timerName === 'timer') {
-                playSound2();
+                if(alarmAudio) {
+                    alarmAudio.play()
+                }
                 let newtodo;
                 // increase 'act' count if repeated
                 newtodo = { 
@@ -72,26 +94,24 @@ const TimerUI = ({ finish, setFinish }) => {
                 });
                 sessionStorage.setItem('todo', JSON.stringify(tos))
                 setTodo(tos)
-                setTimer(Number(customTimer.timer))
                 handleStop();
             }
         }
         return () => {
             clearInterval(intervalId)
         }
-}, [isActive, timer])
+    }, [isActive, timer, customTimer, handleStop, alarmAudio, setTodo, timerName, todo, unTask])
 
     useEffect(() => {
         // set date and finished tasks
         sessionStorage.setItem('date', JSON.stringify(new Date().toLocaleString('en-US').split(", ")[0]))
-        const prevCheckedtasks = JSON.parse(sessionStorage.getItem('checkedTasks'));
-        const allTasks = prevCheckedtasks !== null ? [...prevCheckedtasks, ...finish] : [...finish];
-        console.log('alltasks: ', allTasks);
+        // const prevCheckedtasks = JSON.parse(sessionStorage.getItem('checkedTasks'));
+        // const allTasks = prevCheckedtasks !== null ? [...prevCheckedtasks, ...finish] : [...finish];
         
         // task info
         if (finish.length !== 0 && user) {
             try {
-                axios.post("http://localhost:7000/user-tasks", {
+                axios.post(`${apiUrl}/user-tasks`, {
                     date: JSON.parse(sessionStorage.getItem('date')),
                     userData: user,
                     userTasks: finish,
@@ -100,34 +120,20 @@ const TimerUI = ({ finish, setFinish }) => {
                         'x-correlation-id': xCorrId
                     }
                 })
-                .then(result => console.log(result.data))
+                // .then(result => setMessage(result.data))
             } catch(err) {
-                setErrors(err.message)
+                setMessage(err.message)
             }       
         }
-    }, [finish])
+    }, [finish, user, xCorrId])
 
     const handleStart = () => {
         const stop = document.getElementById('stop');
         stop.style.display = 'inline-block';
-        playSound1();
-        setIsActive(prev => !prev);
-    }
-
-    const handleStop = () => {
-        playSound1();
-        if (timer >= 15 * 60) {
-            setTimer(customTimer ? customTimer.timer*60 : 25 * 60)
-            setIsActive(false)
-        } else if (timer >= 5 * 60 && timer <= 15 * 60) {
-            setTimer(customTimer ? customTimer.long_break*60 : 15 * 60)
-            setIsActive(false)
-        } else if (timer <= 5 * 60) {
-            setTimer(customTimer ? customTimer.short_break*60 : 5 * 60)
-            setIsActive(false)
+        if(clickAudio) {
+            clickAudio.play();
         }
-        const stop = document.getElementById('stop');
-        stop.style.display = 'none';
+        setIsActive(prev => !prev);
     }
 
     const formatTime = (time) => {
@@ -137,17 +143,24 @@ const TimerUI = ({ finish, setFinish }) => {
         return timeFormat
     }
 
+
     return (
         <MyTimerContext.Provider value={{ isActive, setIsActive, setTimer, setTimerName }}>
             <div className='my-2 w-100 text-center'>
-                {errors && <p className='bg-light p-2 text-danger fw-semibold'>! <br/>{errors}</p>}
+                {message && 
+                    <div className="alert alert-warning alert-dismissible fade show" role="alert">
+                        <strong>{message}</strong>
+                        <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
                 {/* timer navigation buttons */}
                 <TimerNav />
 
                 {/* Display timer */}
-                <h1 className='m-4 text-white fw-semibold display-1'>{formatTime(timer)}</h1>
-
-                {/* Start, Pause, Stop Buttons */}
+                <h1 className='m-4 text-white fw-semibold display-1'>
+                    {formatTime(timer)}
+                </h1>
+                
                 <TimerButtons handleStart={handleStart} handleStop={handleStop} />
             </div>
         </MyTimerContext.Provider>

@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useContext } from 'react'
 import Nav from 'react-bootstrap/Nav';
 import axios from 'axios';
+import config from '../../../config';
 import TList from './TList';
 import TReport from './TReport';
 import { UserContext } from '../../../App';
 import { MyContext } from '../Timer';
+
+const apiUrl = config.development.apiUrl;
 
 const TNavbar = () => {
     // context
@@ -22,7 +25,7 @@ const TNavbar = () => {
 
     useEffect(() => {
         if (user) {
-            axios.post("http://localhost:7000/tasks", user, {
+            axios.post(`${apiUrl}/tasks`, user, {
                 headers: {
                     'x-correlation-id': xCorrId
                 }

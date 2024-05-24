@@ -9,9 +9,10 @@ import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import React, { createContext, useEffect, useState } from 'react';
 import axios from 'axios';
-
+import config from './config';
 
 export const UserContext = createContext();
+const apiUrl = config.development.apiUrl;
 
 function App() {
   const [user, setUser] = useState(null);
@@ -28,7 +29,7 @@ function App() {
           setXCorrId(getUser.xCorrId);
         } else {
           const correlationId = `transaction-${Math.ceil(Math.random() * 500)}`;
-          const response = await axios.get('http://localhost:7000/auth/login/success', {
+          const response = await axios.get(`${apiUrl}/auth/login/success`, {
             withCredentials: 'include',
             headers: {
               'x-correlation-id': correlationId,

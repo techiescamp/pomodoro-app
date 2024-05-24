@@ -2,6 +2,9 @@ import React, { useContext, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Header.css';
 import { UserContext } from '../../App';
+import config from '../../config';
+
+const apiUrl = config.development.apiUrl;
 
 function Header() {
   const navigate = useNavigate();
@@ -27,7 +30,7 @@ function Header() {
   },[loc])
 
   const handlelogout = () => {
-    window.open("http://localhost:7000/auth/logout", "_self");
+    window.open(`${apiUrl}/auth/logout`, "_self");
     sessionStorage.clear();
     navigate('/');
   }

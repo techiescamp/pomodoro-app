@@ -1,5 +1,8 @@
 import React, { useState } from 'react'
 import axios from 'axios';
+import config from '../../config';
+
+const apiUrl = config.development.apiUrl;
 
 const FooterForm = () => {
     const [subscribeEmail, setSubscribeEmail] = useState(null);
@@ -12,7 +15,7 @@ const FooterForm = () => {
 
     const handleFooterSubmit = async (e) => {
         e.preventDefault();
-        const sent = await axios.post("http://localhost:7000/subscribe", subscribeEmail)
+        const sent = await axios.post(`${apiUrl}/subscribe`, subscribeEmail)
         alert(sent.data)
         const mailBody = {
             to: subscribeEmail,
@@ -32,7 +35,7 @@ const FooterForm = () => {
                 </div>
             `
         }
-        const result = await axios.post("http://localhost:7000/send-mail", mailBody)
+        const result = await axios.post(`${apiUrl}/send-mail`, mailBody)
         alert(result.data)
         setSubscribeEmail(null)
 }

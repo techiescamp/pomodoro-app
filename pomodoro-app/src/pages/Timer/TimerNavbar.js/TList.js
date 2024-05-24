@@ -62,7 +62,8 @@ const TList = ({user, show, setShow, list}) => {
                                                 )
                                             })}
                                         </ul>
-                                    </td><td>
+                                    </td>
+                                    <td>
                                         <ul style={{listStyle: 'none', padding: 0}}>
                                             {t.tasks.map(task => {
                                                 return (
@@ -75,7 +76,7 @@ const TList = ({user, show, setShow, list}) => {
                                         <ul style={{listStyle: 'none'}}>
                                             {t.tasks.map(task => {
                                                 return (
-                                                    <li key={task.id}>{task.project_title ? task.project_title : `Project Title-${task.id}`}</li>
+                                                    <li key={task.id}>{task.project_title ? task.project_title : `Project Title-${task.title}`}</li>
                                                 )
                                             })}
                                         </ul>
@@ -84,7 +85,7 @@ const TList = ({user, show, setShow, list}) => {
                                         <ul style={{listStyle: 'none'}}>
                                             {t.tasks.map(task => {
                                                 return (
-                                                    <li key={task.id}>{task.description ? task.decription : `task Description-${task.id}`}</li>
+                                                    <li key={task.id}>{task.description ? task.decription : `task Description-${task.title}`}</li>
                                                 )
                                             })}
                                         </ul>
