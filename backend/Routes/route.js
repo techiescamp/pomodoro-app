@@ -18,6 +18,8 @@ route.post('/user/signup', signup);
 route.post('/user/login', login);
 route.post('/user/verifyUser', verifyUser);
 route.post('/user/updateUser', updateUser);
+// for dau
+// route.get('/visits', visits);
 
 // google routes
 route.get('/auth/login/failed', failedRoute);

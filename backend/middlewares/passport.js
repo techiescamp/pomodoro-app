@@ -10,7 +10,7 @@ passport.use(new GoogleStrategy({
     },
     async function(accessToken, refreshToken, profile, done) {
         try {
-            console.log('.... ggogle login starts ....')
+            console.log('.... google login starts ....')
             let user = await User.findOne({googleId: profile.id})
             if(!user) {
                 user = await User.create({

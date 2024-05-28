@@ -24,9 +24,9 @@ const db = mongoose.connect(mongoUrl);
 // cors middlewares
 app.use(express.json());
 app.use(cors({
-  origin: config.urls.baseUrl,
-  method: 'GET, POST, PUT, PATCH, DELETE',
-  headers: "x-access-token, x-correlation-id, Content-Type, Accept, Access-Control-Allow-Credentials",
+  origin: ['http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Accept', 'X-Access-Token', 'X-Correlation-ID', 'Access-Control-Allow-Credentials'],
   credentials: true
 }));
 
@@ -69,17 +69,41 @@ app.use(
           route: req.route.path,
           status_code: res.statusCode,
         },
-        time * 1000
+        time / 1000 // convert to seconds
       );
     }
   })
 );
 
+// health checks
+const health = require('@cloudnative/health-connect');
+let healthCheck = new health.HealthChecker();
+
+const livePromise = () => new Promise((resolve, reject) => {
+  const dbConnectionUp = mongoose.connection.readyState === 1; // 1 indicates connected state [true]
+  if (dbConnectionUp) {
+    resolve();
+  } else {
+    reject(new Error('Pomodoro app is not functioning correctly'));
+  }
+});
+
+let liveCheck = new health.LivenessCheck('LivenessCheck', livePromise)
+healthCheck.registerLivenessCheck(liveCheck);
+
+let readyCheck = new health.PingCheck('http://192.168.0.104:7100/metrics')
+healthCheck.registerReadinessCheck(readyCheck);
+
+
 // handlers or routes
 app.use('/', route)
 
+app.use('/live', health.LivenessEndpoint(healthCheck));
+app.use('/ready', health.ReadinessEndpoint(healthCheck));
+app.use('/health', health.HealthEndpoint(healthCheck));
 
 app.listen(PORT, (err, client) => {
+  startMetricsServer();
   if (err) {
     // console.error('Server is not connected', err)
     logger.error('Server is not connected', err)
@@ -90,5 +114,6 @@ app.listen(PORT, (err, client) => {
     // console.log('MongoDB database is connected.') 
     logger.info('MongoDB database is connected.')
   }
-  startMetricsServer();
 })
+
+module.exports = app;

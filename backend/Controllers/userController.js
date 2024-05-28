@@ -7,6 +7,8 @@ const logger = require('../Logger/logger');
 const logFormat =require('../Logger/logFormat');
 const { databaseResponseTimeHistogram, counter } = require('../Observability/metrics');
 
+
+// unique user-id
 async function generateUserId() {
     const uid = `u${Math.ceil(Math.random()*2000)}`;
     const checkUser = Boolean(await User.findOne({userId: uid}));
@@ -67,6 +69,9 @@ const login = async (req, res) => {
     const exisitngUser = await User.findOne({ email: req.body.email });
 
     if (exisitngUser) {
+        // for dau
+        storeActiveUsers(exisitngUser.userId);
+
         const comparePassword = bcrypt.compareSync(req.body.password, exisitngUser.password);
         if (comparePassword) {
             const payload = {

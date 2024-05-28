@@ -18,7 +18,7 @@ const subscribe = async (req, res) => {
         counter.inc()
         
         logger.info('User already subscribed to our pomodoro app', logFormat(req, logResult))
-        return res.send('Already regsitered to our newletter :)');
+        return res.status(200).send('Already regsitered to our newletter :)');
     } else {
         Subscribers.create({email: req.body['email']})
         const logResult = {
@@ -28,7 +28,7 @@ const subscribe = async (req, res) => {
         timer({operation: "Subscription - user subscribed successfully", success: 'true'})
         counter.inc()
         logger.info('User subscribed to our pomodoro app', logFormat(req, logResult))
-        return res.send('Thank you for subscribing to our newsletter!!');
+        return res.status(200).send('Thank you for subscribing to our newsletter!!');
     }
 
 }
