@@ -7,6 +7,37 @@ const logger = require('../Logger/logger');
 const logFormat =require('../Logger/logFormat');
 const { databaseResponseTimeHistogram, counter } = require('../Observability/metrics');
 
+// for dau
+let activeUser = new Set();
+
+const storeActiveUsers = (req, res, next) => {
+    if(userId) {
+        activeUser.add(userId);
+        console.log(`No.of users visited: ${activeUser.size}`)
+    } else {
+        res.status(400).send('user ID required')
+    }
+    const resetActiveUser = () => {
+        activeUser = new Set();
+        console.log('active user reset')
+    }
+    const scheduleDailyReset = () => {
+        const now = new Date();
+        const midnight = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate() + 1,
+            0, 0, 0, 0
+        );
+        const timeLeft = midnight - now;
+        setTimeout(() => {
+            resetActiveUser();
+            scheduleDailyReset();
+        }, timeLeft)
+    }
+    scheduleDailyReset();
+    return activeUser
+}
 
 // unique user-id
 async function generateUserId() {
@@ -24,9 +55,9 @@ const signup = async (req, res) => {
     const timer = databaseResponseTimeHistogram.startTimer();
 
     const exisitngUser = await User.findOne({ email: req.body.email });
-    if (exisitngUser) {
+    if(exisitngUser) {
         timer({operation: "New Registration", success: "false"});
-        return res.status(401).json({
+        return res.status(400).json({
             message: "User already registered",
             success: "warning"
         })
@@ -119,7 +150,7 @@ const login = async (req, res) => {
 const verifyUser = async (req, res) => {
     // start metrics
     const timer = databaseResponseTimeHistogram.startTimer();
-    const token = req.headers['x-access-token'];
+    const token = req.headers['X-Access-Token'];
     if (!token) {
         //
         logger.error('Invalid token', logFormat(req, res.statusCode))
@@ -144,7 +175,7 @@ const verifyUser = async (req, res) => {
         User.findOne({ _id: new ObjectId(result.id) })
             .then(result => {
                 const payload = {
-                    xCorrId: req.headers['x-correlation-id'],
+                    xCorrId: req.headers['X-Correlation-ID'],
                     message:'userlogged in successfully',
                     success: true,
                     avatar: result.avatar,

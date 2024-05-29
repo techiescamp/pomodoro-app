@@ -5,6 +5,7 @@ const { signup, login, verifyUser, updateUser } = require('../Controllers/userCo
 const { failedRoute, successRoute, getGoogleAuth, googleLogout, getGoogleCallback } = require('../Controllers/authController');
 const { sendMails, subscribe } = require('../Controllers/mailController');
 
+
 const route = express.Router();
 
 // timer route

@@ -38,6 +38,7 @@ const successRoute = (req, res) => {
     }
 }
 
+
 // To initiate the Google OAuth2.0 authentication flow
 const getGoogleAuth = (req, res, next) => {
     passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next)
@@ -50,6 +51,7 @@ const getGoogleCallback = (req, res, next) => {
       failureRedirect: '/auth/login/failed' 
     })(req, res, next);
 };
+
 
 const googleLogout = (req, res) => {
     const timer = databaseResponseTimeHistogram.startTimer();

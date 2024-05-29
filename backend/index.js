@@ -23,10 +23,11 @@ const db = mongoose.connect(mongoUrl);
 
 // cors middlewares
 app.use(express.json());
+
 app.use(cors({
   origin: ['http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Accept', 'X-Access-Token', 'X-Correlation-ID', 'Access-Control-Allow-Credentials'],
+  allowedHeaders: ['Content-Type', 'Accept', 'X-Access-Token', 'X-Correlation-ID', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'],
   credentials: true
 }));
 
@@ -90,8 +91,7 @@ const livePromise = () => new Promise((resolve, reject) => {
 
 let liveCheck = new health.LivenessCheck('LivenessCheck', livePromise)
 healthCheck.registerLivenessCheck(liveCheck);
-
-let readyCheck = new health.PingCheck('http://192.168.0.104:7100/metrics')
+let readyCheck = new health.PingCheck("http://localhost:7100/metrics")
 healthCheck.registerReadinessCheck(readyCheck);
 
 

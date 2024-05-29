@@ -15,7 +15,6 @@ const AppWrapper = () => {
   useEffect(() => {
     const end = performance.now();
     const loadTime = end - start;
-    console.log(loadTime);
     sendLoadTimeToBackend(loadTime);
   }, []);
 

@@ -69,6 +69,8 @@ function startMetricsServer() {
         credentials: true
     }));
 
+    app.use(express.json());
+
     app.use((req, res, next) => {
         const end = responseTime.startTimer();
         res.on('finish', () => {
@@ -77,8 +79,6 @@ function startMetricsServer() {
         next();
     })
 
-    app.use(express.json());
-  
     app.post("/metrics/app-load-time", (req, res) => {
         const loadTime = req.body;
         if (typeof loadTime.app_time === 'number') {
@@ -103,7 +103,7 @@ function startMetricsServer() {
         uptimeGauge.set(process.uptime());
     }, 1000)
   
-    app.listen(7100, "192.168.0.104", () => {
+    app.listen(7100, "localhost", () => {
     //   console.log(`Metrics server started at ${config.observability.metrics_url}`);
       logger.info(`Metrics server started at ${config.observability.metrics_url}`);
     });

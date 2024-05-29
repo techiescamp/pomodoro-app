@@ -36,8 +36,8 @@ const Login = () => {
         .then(res => {
             axios.post(`${apiUrl}/user/verifyUser`, res.data, {
                 headers: {
-                    'x-correlation-id': cid,
-                    'x-access-token': res.data.token
+                    'X-Correlation-ID': cid,
+                    'X-Access-Token': res.data.token
                 }
             })
             .then(res => {

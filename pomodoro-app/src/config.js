@@ -1,11 +1,9 @@
+// require('dotenv').config();
+
 const config = {
     development: {
-        // apiUrl: process.env.REACT_APP_API_URL
-        apiUrl: 'http://localhost:7000'
+        apiUrl: process.env.REACT_APP_API_URL
     },
-    production: {
-        apiUrl: ''
-    }
 }
 
 export default config;
