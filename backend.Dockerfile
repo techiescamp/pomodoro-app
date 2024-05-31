@@ -1,0 +1,16 @@
+FROM node:20.12.2-alpine
+
+# Work directory for all steps
+WORKDIR /app
+
+# Copy files from local to the work directory
+COPY /backend/. .
+
+# Install all dependencies
+RUN npm install
+
+# Expose package
+EXPOSE 3000 7000 7100
+
+# Command to run the application
+CMD ["npm", "start"]

@@ -1,0 +1,22 @@
+replicaCount: 1
+image:
+  repository: mongo
+  pullPolicy: IfNotPresent
+  tag: latest
+
+pvc:
+  storage: 1Gi
+secret:
+  password: cGFzc3dvcmQxMjM=
+  username: YWRtaW51c2Vy
+service:
+  type: NodePort
+  port: 27017
+  nodePort: 32701
+
+## Network Policy
+
+egress:
+  namespace: backend
+  appLabel: backend
+  port: 7000
