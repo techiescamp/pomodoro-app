@@ -11,7 +11,7 @@ COPY /pomodoro-app/package*.json ./
 # Install all dependencies
 RUN npm install
 
-# Expose package
+# Expose port
 EXPOSE 3000
 
 # Command to run the application

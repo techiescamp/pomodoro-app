@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+data:
+  config.js: |
+    const config = {
+      development: {
+        apiUrl: "{{ .Values.backend_url }}"
+      },
+      production: {
+        apiUrl: ''
+      }
+    };
+
+    export default config;

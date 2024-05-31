@@ -1,0 +1,24 @@
+replicaCount: 1
+
+image:
+  repository: techiescamp/pomodoro
+  tag: "3.0.0"
+  pullPolicy: IfNotPresent
+
+configmap:
+  mountpath: /app/src/config.js
+  subpath: config.js
+
+service:
+  type: NodePort
+  port: 3000
+  nodeport: 32749
+
+backend_url: http://34.71.163.101:30163
+
+## Network Policy
+
+egress:
+  namespace: backend
+  appLabel: backend
+  port: 7000

@@ -4,19 +4,27 @@ metadata:
   name: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ .Release.Name }}
+    app: frontend
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      app: frontend
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
+        app: frontend
     spec:
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ .Release.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: {{ .Values.service.port }}
+          volumeMounts:
+          - name: {{ .Release.Name }}
+            mountPath: {{ .Values.configmap.mountpath }}
+            subPath: {{ .Values.configmap.subpath }}
+      volumes:
+      - name: {{ .Release.Name }}
+        configMap:
+          name: {{ .Release.Name }}
