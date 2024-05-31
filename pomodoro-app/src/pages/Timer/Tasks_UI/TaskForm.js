@@ -2,8 +2,11 @@ import React, { useContext, useEffect, useState } from 'react'
 import { MyContext } from '../Timer';
 import TaskButtons from './TaskButtons';
 import '../Timer.css';
+import config from '../../../config';
 import axios from 'axios';
 import { UserContext } from '../../../App';
+
+const apiUrl = config.development.apiUrl
 
 const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
     const { todo, setTodo } = useContext(MyContext);
@@ -15,7 +18,8 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
     useEffect(() => {
          // if user logged again today ? integrate old tasks to today's tasks 
         if(user) {
-            axios.post('http://localhost:7000/checkTodayTasks', {date: todayDate, email: user.email}, {
+            axios.post(`${apiUrl}/checkTodayTasks`, 
+                {date: todayDate, email: user.email}, {
                 headers: {
                     'x-correlation-id': xCorrId 
                 }
@@ -47,7 +51,6 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
     function generateUniqueId() {
         const timestamp = Date.now().toString(36)
         const randString = Math.floor(Math.random().toString(8));
-        console.log(`T${timestamp + randString}`)
         return `T${timestamp + randString}`
     }
 

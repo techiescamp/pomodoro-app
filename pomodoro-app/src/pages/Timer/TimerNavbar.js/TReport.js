@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
 import Modal from 'react-bootstrap/Modal';
-import axios from 'axios';
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js/auto';
 import { Bar } from 'react-chartjs-2';
 import { UserContext } from '../../../App';

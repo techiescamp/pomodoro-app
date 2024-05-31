@@ -1,7 +1,12 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+import config from '../../config';
+
+const apiUrl = config.development.apiUrl;
 
 const Signup = () => {
+    console.log(`${apiUrl}`);
+
     const navigate = useNavigate();
     const [status, setStatus] = useState(false);
     const [userDetails, setUserDetails] = useState({
@@ -20,7 +25,7 @@ const Signup = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const cid = `transaction-${Math.ceil(Math.random()*200)}`;
-        fetch("http://localhost:7000/user/signup", {
+        fetch(`${apiUrl}/user/signup`, {
             method: 'POST',
             body: JSON.stringify(userDetails),
             headers: {
@@ -28,13 +33,12 @@ const Signup = () => {
                 "Content-Type": "application/json"
             }
         })
-            .then(res => {
-                if (res.status === 200) return res.json()
-                throw new Error("Not registered")
-            })
+            .then(res => res.json())
             .then(data => {
                 setStatus(data);
-                navigate("/login", {state: data.xCorrId})
+                if(data.success === true) {
+                    navigate("/login", {state: data.xCorrId})
+                }
             });
 
         setUserDetails({
@@ -45,7 +49,7 @@ const Signup = () => {
     }
 
     const registerGoogle = () => {
-        window.open('http://localhost:7000/auth/google', "_self");
+        window.open(`${apiUrl}/auth/google`, "_self");
     }
 
     const inlineStyle = {
@@ -54,10 +58,10 @@ const Signup = () => {
         padding: '5px'
     }
     function getColor() {
-        if (status.success) {
-            return '#83f28f'
+        if (status.success === true) {
+            return 'green'
         } else {
-            return '#FFC1C3'
+            return 'red'
         }
     }
 
@@ -66,7 +70,7 @@ const Signup = () => {
             <div className="form-container mx-auto pt-5">
                 <div className='form-wrapper mx-auto border border-outline-secondary p-2 bg-light'>
                     <h3 className='m-3'>SIGN UP FORM</h3>
-                    {status ? <p style={inlineStyle}>{status.message}</p> : null}
+                    {status ? <p style={inlineStyle}>{status.message} !</p> : null}
 
                     <form onSubmit={handleSubmit}>
                         <div className='w-75 mx-auto'>

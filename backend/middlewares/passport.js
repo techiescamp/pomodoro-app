@@ -1,6 +1,8 @@
 const passport = require('passport');
 const config = require('../config');
 const User = require('../Model/userModel');
+const logger = require('../Logger/logger');
+const logFormat = require('../Logger/logFormat');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 passport.use(new GoogleStrategy({
@@ -10,9 +12,13 @@ passport.use(new GoogleStrategy({
     },
     async function(accessToken, refreshToken, profile, done) {
         try {
-            console.log('.... ggogle login starts ....')
             let user = await User.findOne({googleId: profile.id})
             if(!user) {
+                const logResult = {
+                    userId: profile.id,
+                    statusCode: 200,
+                }
+                logger.info('User via google email id is registered', logFormat(null, logResult))
                 user = await User.create({
                     googleId: profile.id,
                     displayName: profile.displayName,
@@ -31,7 +37,7 @@ passport.use(new GoogleStrategy({
 ));
 
 passport.serializeUser((user, done) => {
-    done(null, user.id)
+    done(null, user)
 });
 
 passport.deserializeUser(async (id, done) => {

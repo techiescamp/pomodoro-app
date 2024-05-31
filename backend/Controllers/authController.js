@@ -2,12 +2,15 @@ const passport = require('passport');
 const config = require('../config');
 const logger = require('../Logger/logger');
 const logFormat = require('../Logger/logFormat');
+const { databaseResponseTimeHistogram, counter } = require('../Observability/metrics');
 
 const failedRoute = (req, res) => {
     const logResult = {
         statusCode: res.statusCode,
     }
     logger.error('Failed to route the login credentials', logFormat(req, logResult))
+    timer({operation: "User Google login failed route", success: "false"});
+    counter.inc();
     res.status(401).json({
         success: false,
         message: "failure"
@@ -15,12 +18,16 @@ const failedRoute = (req, res) => {
 }
 
 const successRoute = (req, res) => {
+    const timer = databaseResponseTimeHistogram.startTimer();
+
     if(req.user) {
         const logResult = {
             userId: req.user.userId,
             statusCode: res.statusCode,
         }
         logger.info('User logged via google account', logFormat(req, logResult))
+        timer({operation: "User Google login success route", success: "true"});
+        counter.inc();
         res.status(200).json({
             success: true,
             message: "successfull",
@@ -30,6 +37,7 @@ const successRoute = (req, res) => {
         })
     }
 }
+
 
 // To initiate the Google OAuth2.0 authentication flow
 const getGoogleAuth = (req, res, next) => {
@@ -44,15 +52,20 @@ const getGoogleCallback = (req, res, next) => {
     })(req, res, next);
 };
 
+
 const googleLogout = (req, res) => {
+    const timer = databaseResponseTimeHistogram.startTimer();
+
     const logResult = {
         statusCode: res.statusCode,
         responseTime: res.responseTime
     }
     logger.info('User logged out!', logFormat(req, logResult));
+    timer({operation: "User Logout", success: "true"});
+    counter.inc();
     req.logout(function(err) {
         if(err) return next(err)
-        res.redirect(config.urls.baseUrl)
+        res.status(200).redirect(config.urls.baseUrl)
     })
 }
 
