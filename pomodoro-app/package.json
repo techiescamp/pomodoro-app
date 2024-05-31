@@ -10,6 +10,7 @@
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "chart.js": "^4.4.2",
+    "dotenv": "^16.4.5",
     "html2pdf.js": "^0.10.1",
     "popper.js": "^1.16.1",
     "react": "^18.3.1",

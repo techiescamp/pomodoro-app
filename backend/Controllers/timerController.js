@@ -16,7 +16,7 @@ const checkTodayTasks = async (req, res) => {
         const userTasksForPresentDate = allUserTasks.filter(task => task.date === presentDate);
         timer({operation: 'Checking todays tasks', success: 'true'});
         counter.inc()
-        res.send(userTasksForPresentDate[0] ? userTasksForPresentDate[0].tasks : null);
+        res.status(200).send(userTasksForPresentDate[0] ? userTasksForPresentDate[0].tasks : null);
     }
 }
 
@@ -68,13 +68,13 @@ const userTasks = async (req, res) => {
         logger.info('Created user-task', logFormat(req, logResult));
         timer({operation: "Tasks are saved in database", success: 'true'})
         counter.inc()
-        return res.send('Submitted');
+        return res.status(200).send('Submitted');
     }
     catch (err) {
         logger.error('Error exception in user-tasks', err);
         timer({operation: 'Exception error', success: 'false'})
         counter.inc()
-        res.send('User needs to login to save tasks')
+        res.status(400).send('User needs to login to save tasks')
     }
 }
 
@@ -91,7 +91,7 @@ const tasks = async (req, res) => {
             logger.info('sent task-list to browser', logFormat(req, logResult));
             timer({operation: 'Tasks are sent to client', success: 'true'})
             counter.inc()
-            return res.send(existingUser)
+            return res.status(200).send(existingUser)
         } else {
             timer({operation: 'Failed to sent Tasks to the client', success: 'false'})
             counter.inc()

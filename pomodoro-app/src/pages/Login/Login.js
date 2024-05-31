@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import config from '../../config';
+
+const apiUrl = config.development.apiUrl;
 
 const Login = () => {
     const navigate = useNavigate();
@@ -23,16 +26,18 @@ const Login = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const cid = xCorrId || `transaction-${Math.ceil(Math.random()*500)}`;
-        axios.post("http://localhost:7000/user/login", userLogin, {
+        console.log(`${apiUrl}`);
+
+        axios.post(`${apiUrl}/user/login`, userLogin, {
             headers: {
                 'x-correlation-id': cid
             }
         })
         .then(res => {
-            axios.post('http://localhost:7000/user/verifyUser', res.data, {
+            axios.post(`${apiUrl}/user/verifyUser`, res.data, {
                 headers: {
-                    'x-correlation-id': cid,
-                    'x-access-token': res.data.token
+                    'X-Correlation-ID': cid,
+                    'X-Access-Token': res.data.token
                 }
             })
             .then(res => {
@@ -51,7 +56,7 @@ const Login = () => {
     }
 
     const loginGoogle = () => {
-        window.open("http://localhost:7000/auth/google", "_self")
+        window.open(`${apiUrl}/auth/google`, "_self")
     }
 
     const inlineStyle = {
