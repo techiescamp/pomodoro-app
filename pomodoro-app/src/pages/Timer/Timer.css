@@ -4,7 +4,10 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='72' viewBox='0 0 36 72'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23c7c4cb' fill-opacity='0.18'%3E%3Cpath d='M2 6h12L8 18 2 6zm18 36h12l-6 12-6-12z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 #timerNavigation {
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.2);
+}
+#timerNavigation .nav-item .nav-link:hover {
+    color: yellow !important;
 }
 
 .timerApp {
@@ -17,7 +20,7 @@
     border: 2px solid rgba(255, 255, 255, 0.7);
     border-style: dashed;
     letter-spacing: 1px;
-    font-size: 16px;
+    /* font-size: 16px; */
 }
 
 #addBtn:hover {
@@ -48,10 +51,16 @@
 }
 
 /* timer */
-
 .timer-pill.nav-pills .nav-link.active {
-    font-weight: 700;
+    font-weight: 600;
     background-color: rgba(0, 0, 0, 0.2) !important;
+}
+.timer-pill.nav-pills .nav-link:hover {
+    color: yellow !important;
+}
+
+#timer-display {
+    font-size: 5em;
 }
 
 #stop {
@@ -146,4 +155,11 @@
     #task-btn {
         display: flex;
     }
+    .pomo-title {
+        font-size: 1.3rem;
+      }
+      .pomo-content {
+        font-size: 1rem;
+      }
+    
 }

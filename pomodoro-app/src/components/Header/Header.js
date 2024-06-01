@@ -47,7 +47,7 @@ function Header() {
             {user ?
               <ul className='navbar-nav me-lg-5 mb-lg-0'>
                 <li className='nav-item me-lg-4 mb-1 mb-lg-0 dropdown'>
-                  <button className='px-3 py-1 mx-auto rounded-pill border border-info-subtle d-flex align-items-center dropdown-toggle' type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <button className='px-3 py-1 mx-auto rounded-pill border border-info-subtle d-flex align-items-md-center dropdown-toggle' type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     {user.avatar.imgType === 'text' ?  
                       <span className="avatar me-2">{user.avatar.data}</span>
                       :

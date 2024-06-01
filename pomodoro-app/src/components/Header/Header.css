@@ -56,3 +56,9 @@ header nav {
 .h-dropdown:hover .dropdown-menu {
     display: block;
 }
+
+@media screen and (max-width: 767px) {
+    .dropdown.show {
+        border: none;
+    }
+}

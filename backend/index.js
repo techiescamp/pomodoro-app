@@ -15,6 +15,11 @@ const uuid = require('uuid');
 const logger = require('./Logger/logger');
 const responseTime = require('response-time')
 
+// health check variable
+let isDatabaseReady = false;
+let isServerReady = false;
+
+
 const app = express();
 
 // connect to database
@@ -25,7 +30,7 @@ const db = mongoose.connect(mongoUrl);
 app.use(express.json());
 
 app.use(cors({
-  origin: ['http://localhost:3000'],
+  origin: config.urls.baseUrl,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Accept', 'X-Access-Token', 'X-Correlation-ID', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'],
   credentials: true
@@ -76,42 +81,106 @@ app.use(
   })
 );
 
-// health checks
-const health = require('@cloudnative/health-connect');
-let healthCheck = new health.HealthChecker();
-
-const livePromise = () => new Promise((resolve, reject) => {
-  const dbConnectionUp = mongoose.connection.readyState === 1; // 1 indicates connected state [true]
-  if (dbConnectionUp) {
-    resolve();
-  } else {
-    reject(new Error('Pomodoro app is not functioning correctly'));
-  }
-});
-
-let liveCheck = new health.LivenessCheck('LivenessCheck', livePromise)
-healthCheck.registerLivenessCheck(liveCheck);
-let readyCheck = new health.PingCheck("http://localhost:7100/metrics")
-healthCheck.registerReadinessCheck(readyCheck);
-
-
 // handlers or routes
 app.use('/', route)
 
-app.use('/live', health.LivenessEndpoint(healthCheck));
-app.use('/ready', health.ReadinessEndpoint(healthCheck));
-app.use('/health', health.HealthEndpoint(healthCheck));
+
+// health checks
+app.get('/health', async (req, res) => {
+  try {
+    // const mongo = await mongoose.connection.db.admin().ping(); // { ok: 1 }
+    const mongo = isDatabaseReady;
+    const isMetricsReady = await checkMetricsReady();
+
+    if(mongo && isMetricsReady && isServerReady) {
+      res.status(200).json({
+        status: 'HEALTHY',
+        statusCode: 200,
+        Message: "Both mongodb server and metris server are UP and  running"
+      })
+    } else {
+      res.status(500).json({
+        status: 'UNHEALTHY',
+        statusbar: 500,
+        error: "Monogodb server and metrics are not DOWN and either or both of them are not running. Please check your codes."
+      })
+    }
+  }
+  catch(err) {
+    res.status(500).json({
+      status: 'UNHEALTHY',
+      error: err.message
+    })
+  }
+})
+async function checkMetricsReady() {
+  try{
+    const response = await fetch('http://localhost:7100/metrics/ready');
+    const data = await response.json();
+    return data.status === 'OK';
+  }
+  catch(err) {
+    console.error('Error checking metrics server health: ', err);
+    return false;
+  }
+}
+
+app.get('/live', (req, res) => {
+  if(isServerReady && isDatabaseReady) {
+    res.json(200).json({
+      status: 'UP',
+      statusCode: 200,
+      message: 'Server and MongoDb is UP'
+    })
+  } else {
+    res.status(500).json({
+      status: 'DOWN',
+      statusCode: 500,
+      message: "Backend server and Database is DOWN"
+    })
+  }
+});
+
+app.get('/ready', async (req, res) => {
+  const isMetricsReady = await checkMetricsReady();
+  if(isMetricsReady && isServerReady) {
+    res.status(200).json({
+      status: 'UP and LIVE',
+      statusCode: 200,
+      message: "Metrics server and Backend server is ready and running"
+    })
+  } else if(isMetricsReady && !isServerReady) {
+    res.status(500).json({
+      status: 'DOWN and NOT LIVE',
+      statusCode: 500,
+      message: "Metrics server is LIVE and Backend server is NOT LIVE"
+    })
+  } else if(!isMetricsReady && isServerReady) {
+    res.status(500).json({
+      status: 'DOWN and NOT LIVE',
+      statusCode: 500,
+      message: "Metrics server is NOT LIVE and Backend server is LIVE"
+    })
+  } else {
+    res.status(500).json({
+      status: 'DOWN and NOT LIVE',
+      statusCode: 500,
+      message: "Both Metrics server and Backend server is NOT LIVE"
+    })
+  }
+});
+
+
 
 app.listen(PORT, (err, client) => {
   startMetricsServer();
   if (err) {
-    // console.error('Server is not connected', err)
     logger.error('Server is not connected', err)
   }
-  // console.log('server connected at PORT: ', PORT)
+  isServerReady = true;
   logger.info('server connected at PORT: ', PORT)
   if (db) {
-    // console.log('MongoDB database is connected.') 
+    isDatabaseReady = true;
     logger.info('MongoDB database is connected.')
   }
 })
