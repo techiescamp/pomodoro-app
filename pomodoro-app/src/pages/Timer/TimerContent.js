@@ -3,7 +3,7 @@ import React from 'react';
 const TimerContent = () => {
     return (
         <div className='container py-3'>
-            <h2 className='pomo-title py-3 mb-4'>Pomodoro Technique to boost your productivity</h2>
+            <h2 className='pomo-title py-md-3 mb-4'>Pomodoro Technique to boost your productivity</h2>
             <h3 className='pomo-title text-dark mb-3'>What is Pomodoro ?</h3>
             <p className='pomo-content mb-4'>
                 Pomodoro is a popular time management technique created by Francesco Cirillo for a more productive way to work and study.

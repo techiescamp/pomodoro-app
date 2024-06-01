@@ -68,9 +68,9 @@ const Timer = () => {
                             <h4 className='text-white'>Tasks</h4>
                             <Dropdown>
                                 <Dropdown.Toggle variant="none" className='text-white fw-bold'>. . .</Dropdown.Toggle>
-                                <Dropdown.Menu>
-                                    <Dropdown.Item onClick={handleClearTask}>Clear Finished Task</Dropdown.Item>
-                                    <Dropdown.Item onClick={handleClearAll}>Clear All tasks</Dropdown.Item>
+                                <Dropdown.Menu className='px-2'>
+                                    <Dropdown.Item onClick={handleClearTask} className='p-2'>Clear Finished Task</Dropdown.Item>
+                                    <Dropdown.Item onClick={handleClearAll} className='p-2'>Clear All tasks</Dropdown.Item>
                                 </Dropdown.Menu>
                             </Dropdown>
                         </div>
@@ -79,13 +79,13 @@ const Timer = () => {
                         <TaskUI />
 
                         {/* Add task Button */}
-                        <button className='container btn px-5 py-2 my-3 mx-auto text-white fw-bold' id='addBtn' onClick={handleAddTask}>
+                        <button className='btn px-5 py-2 my-4 mx-auto text-white fw-bold' id='addBtn' onClick={handleAddTask}>
                             Add Tasks
                         </button>
 
                         {/* Finish Button */}
                         <div className='text-start' id='finish'>
-                            <p className='text-white p-3 fw-bold border border-1' onClick={handleAddTask}>
+                            <p className='text-white px-3 py-2 fw-bold border border-1' onClick={handleAddTask}>
                                 Finished: {count === 0 ? 0 : count} task completed
                             </p>
                         </div>
