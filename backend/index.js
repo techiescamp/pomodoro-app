@@ -30,7 +30,7 @@ const db = mongoose.connect(mongoUrl);
 app.use(express.json());
 
 app.use(cors({
-  origin: ['http://localhost:3000'],
+  origin: config.urls.baseUrl,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Accept', 'X-Access-Token', 'X-Correlation-ID', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'],
   credentials: true
