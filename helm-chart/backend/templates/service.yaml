@@ -8,9 +8,6 @@ spec:
   selector:
     app: backend
   ports:
-  - name: http
-    port: {{ .Values.service.ports.http }}
-    targetPort: {{ .Values.service.ports.http }}
   - name: admin
     port: {{ .Values.service.ports.admin }}
     targetPort: {{ .Values.service.ports.admin }}

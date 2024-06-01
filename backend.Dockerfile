@@ -10,7 +10,7 @@ COPY /backend/. .
 RUN npm install
 
 # Expose package
-EXPOSE 3000 7000 7100
+EXPOSE 7000 7100
 
 # Command to run the application
 CMD ["npm", "start"]

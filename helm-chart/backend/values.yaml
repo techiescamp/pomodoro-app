@@ -2,13 +2,12 @@ replicaCount: 1
 
 image:
   repository: techiescamp/pomodoro
-  tag: "2.1.0"
+  tag: "5.1.0"
   pullPolicy: IfNotPresent
 
 service:
   type: NodePort
   ports:
-    http: 3000
     admin: 7000
     admin_nodeport: 30163
     metrics: 7100

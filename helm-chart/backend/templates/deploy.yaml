@@ -17,7 +17,6 @@ spec:
       - name: {{ .Release.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         ports:
-        - containerPort: {{ .Values.service.ports.http }}
         - containerPort: {{ .Values.service.ports.admin }}
         - containerPort: {{ .Values.service.ports.metrics }}
         volumeMounts:
