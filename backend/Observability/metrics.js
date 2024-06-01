@@ -59,6 +59,8 @@ const errorCounter = new client.Counter({
 });
 
 function startMetricsServer() {
+    let isMetricsReady = false;
+
     const collectDefaultMetrics = client.collectDefaultMetrics;
     collectDefaultMetrics({ register });
 
@@ -93,6 +95,14 @@ function startMetricsServer() {
         res.status(200).send('Error logged');
     })
 
+    app.get('/metrics/ready', (req, res) => {
+        if(isMetricsReady) {
+            res.status(200).json({status: 'OK'})
+        } else {
+            res.status(500).json({status: 'Not ready'})
+        }
+    })
+
     app.get("/metrics", async (req, res) => {
         res.set("Content-Type", register.contentType);
         return res.end(await register.metrics());
@@ -104,6 +114,7 @@ function startMetricsServer() {
     }, 1000)
   
     app.listen(7100, "localhost", () => {
+        isMetricsReady = true
     //   console.log(`Metrics server started at ${config.observability.metrics_url}`);
       logger.info(`Metrics server started at ${config.observability.metrics_url}`);
     });

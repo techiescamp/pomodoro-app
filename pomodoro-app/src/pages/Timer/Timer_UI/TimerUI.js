@@ -157,7 +157,7 @@ const TimerUI = ({ finish, setFinish }) => {
                 <TimerNav />
 
                 {/* Display timer */}
-                <h1 className='m-4 text-white fw-semibold display-1'>
+                <h1 className='m-4 text-white fw-semibold' id='timer-display'>
                     {formatTime(timer)}
                 </h1>
                 

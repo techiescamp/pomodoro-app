@@ -37,16 +37,16 @@ const TNavbar = () => {
     }, [user, count])
 
     return (
-        <div className='mb-4'>
-            <Nav className='container-fluid justify-content-md-center flex-nowrap position-absolute top-0 start-0' id='timerNavigation'>
+        <div className='mb-5'>
+            <Nav className='container-fluid p-md-2 justify-content-center flex-nowrap position-absolute top-0 start-0' id='timerNavigation'>
                 <Nav.Item>
-                    <Nav.Link className='text-white rounded-pill py-1 px-5' onClick={handleShow}>
-                        Completed List
+                    <Nav.Link className='rounded-pill fw-medium py-1 px-5' onClick={handleShow}>
+                        Task List
                     </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                    <Nav.Link className='text-white rounded-pill py-1 px-5' onClick={handleReport}>
-                        Report
+                    <Nav.Link className='rounded-pill fw-medium py-1 px-5' onClick={handleReport}>
+                        Task Report
                     </Nav.Link>
                 </Nav.Item>
             </Nav>

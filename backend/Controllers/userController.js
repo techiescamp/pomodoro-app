@@ -10,7 +10,7 @@ const { databaseResponseTimeHistogram, counter } = require('../Observability/met
 // for dau
 let activeUser = new Set();
 
-const storeActiveUsers = (req, res, next) => {
+const storeActiveUsers = (userId) => {
     if(userId) {
         activeUser.add(userId);
         console.log(`No.of users visited: ${activeUser.size}`)
@@ -115,7 +115,7 @@ const login = async (req, res) => {
                 userId: exisitngUser.userId,
                 statusCode: res.statusCode,
             }
-            logger.info('user logged in', logFormat(req, logResult))
+            logger.info('user logged in info is passed to server', logFormat(req, logResult))
             timer({operation: "User verification", success: "true"})
             counter.inc()
             return res.status(200).json({
@@ -150,7 +150,7 @@ const login = async (req, res) => {
 const verifyUser = async (req, res) => {
     // start metrics
     const timer = databaseResponseTimeHistogram.startTimer();
-    const token = req.headers['X-Access-Token'];
+    const token = req.headers['x-access-token'];
     if (!token) {
         //
         logger.error('Invalid token', logFormat(req, res.statusCode))
@@ -163,8 +163,8 @@ const verifyUser = async (req, res) => {
     }
     jwt.verify(token, config.secrets.jwt_key, (err, result) => {
         if (err) {
-            logger.error('Invalid token', logFormat(req, res.statusCode))
-            timer({operation: "User login - invalid token", success: "false"});
+            logger.error('Token generated but user is not verified', logFormat(req, res.statusCode))
+            timer({operation: "Token generation is not a valid one", success: "false"});
             counter.inc();
             return res.status(401).json({
                 message: "Invalid user credentials",

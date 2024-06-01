@@ -17,7 +17,6 @@ const apiUrl = config.development.apiUrl;
 function App() {
   const [user, setUser] = useState(null);
   const [xCorrId, setXCorrId] = useState(null);
-  console.log(`${apiUrl}`);
 
   const loc = useLocation();
   const getUser = JSON.parse(sessionStorage.getItem('userinfo')) || null;
