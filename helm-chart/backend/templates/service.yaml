@@ -8,14 +8,15 @@ spec:
   selector:
     app: backend
   ports:
-  - name: http
-    port: {{ .Values.service.ports.http }}
-    targetPort: {{ .Values.service.ports.http }}
   - name: admin
     port: {{ .Values.service.ports.admin }}
     targetPort: {{ .Values.service.ports.admin }}
+    {{- if eq .Values.service.type "NodePort" }}
     nodePort: {{ .Values.service.ports.admin_nodeport }}
+    {{- end }}
   - name: metrics
     port: {{ .Values.service.ports.metrics }}
     targetPort: {{ .Values.service.ports.metrics }}
+    {{- if eq .Values.service.type "NodePort" }}
     nodePort: {{ .Values.service.ports.metric_nodeport }}
+    {{- end }}

@@ -10,9 +10,17 @@ secret:
   password: cGFzc3dvcmQxMjM=
   username: YWRtaW51c2Vy
 service:
-  type: NodePort
+  type: ClusterIP
   port: 27017
   nodePort: 32701
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
 
 ## Network Policy
 
@@ -20,3 +28,4 @@ egress:
   namespace: backend
   appLabel: backend
   port: 7000
+
