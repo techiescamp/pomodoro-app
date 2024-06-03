@@ -18,7 +18,6 @@ const responseTime = require('response-time')
 // health check variable
 let isDatabaseReady = false;
 let isServerReady = false;
-let isFrontendLoaded;
 
 const app = express();
 
@@ -84,47 +83,31 @@ app.use(
 // handlers or routes
 app.use('/', route)
 
-app.post('/health', async (req, res) => {
-  isFrontendLoaded = req.body.loadtime;
-});
-
 // health checks
 app.get('/health', async (req, res) => {
   try {
     // const mongo = await mongoose.connection.db.admin().ping(); // { ok: 1 }
     const mongo = isDatabaseReady;
     const isMetricsReady = await checkMetricsReady();
-
-    if(mongo && isMetricsReady && isServerReady && isFrontendLoaded) {
+    if(mongo && isMetricsReady && isServerReady) {
       res.status(200).json({
-        application_loadtime: isFrontendLoaded,
         status: 'HEALTHY',
         statusCode: 200,
-        Message: "All mongodb server, metrics server and frontend application are UP and running"
-      })
-    } else if(mongo && isMetricsReady && isServerReady && !isFrontendLoaded) {
-      res.status(400).json({
-        status: 'UNHEALTHY FRONTEND',
-        statusCode: 400,
-        Message: "All servers are UP and running but Frontend Application is DOWN"
-      })
-    } else if(mongo && isMetricsReady && isServerReady) {
-      res.status(400).json({
-        status: 'HEALTHY BACKEND',
-        statusCode: 400,
-        Message: "All servers are UP and running"
+        Message: "Backend server, metrics server and MonogoDB are UP and running"
       })
     } else {
       res.status(500).json({
         status: 'UNHEALTHY',
-        statusbar: 500,
-        error: "Monogodb server and metrics are not DOWN and either or both of them are not running. Please check your codes."
+        statusCode: 500,
+        Message: "Either Server, metrics or MonogDB is DOWN. Please check your codes."
       })
     }
   }
   catch(err) {
     res.status(500).json({
       status: 'UNHEALTHY',
+      statusCode: 500,
+      Message: "Server is DOWN. Please check your codes.",
       error: err.message
     })
   }
