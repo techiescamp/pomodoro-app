@@ -15,16 +15,6 @@ const AppWrapper = () => {
   useEffect(() => {
     const end = performance.now();
     const loadTime = end - start;
-    try {
-      fetch('http://localhost:7000/health', { 
-        method: 'POST',
-        body: JSON.stringify({loadtime: loadTime}),
-        headers: { 'Content-Type': 'application/json' }
-      })
-    }
-    catch(err) {
-      console.error(err);
-    }
     sendLoadTimeToBackend(loadTime);
   }, []);
 
