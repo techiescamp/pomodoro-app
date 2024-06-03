@@ -19,6 +19,14 @@ configmap:
 
 secretName: backend-secrets
 
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 1
+    memory: 1Gi
+
 ## Network Policy
 ingress:
   namespace: frontend

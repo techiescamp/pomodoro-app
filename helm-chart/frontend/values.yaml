@@ -30,3 +30,8 @@ egress:
   namespace: backend
   appLabel: backend
   port: 7000
+
+autoscaling:
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
