@@ -18,7 +18,7 @@ const responseTime = require('response-time')
 // health check variable
 let isDatabaseReady = false;
 let isServerReady = false;
-
+let isFrontendLoaded;
 
 const app = express();
 
@@ -84,6 +84,9 @@ app.use(
 // handlers or routes
 app.use('/', route)
 
+app.post('/health', async (req, res) => {
+  isFrontendLoaded = req.body.loadtime;
+});
 
 // health checks
 app.get('/health', async (req, res) => {
@@ -92,11 +95,23 @@ app.get('/health', async (req, res) => {
     const mongo = isDatabaseReady;
     const isMetricsReady = await checkMetricsReady();
 
-    if(mongo && isMetricsReady && isServerReady) {
+    if(mongo && isMetricsReady && isServerReady && isFrontendLoaded) {
       res.status(200).json({
         status: 'HEALTHY',
         statusCode: 200,
-        Message: "Both mongodb server and metris server are UP and  running"
+        Message: "All mongodb server, metrics server and frontend application are UP and running"
+      })
+    } else if(mongo && isMetricsReady && isServerReady && !isFrontendLoaded) {
+      res.status(400).json({
+        status: 'UNHEALTHY FRONTEND',
+        statusCode: 400,
+        Message: "All servers are UP and running but Frontend Application is DOWN"
+      })
+    } else if(mongo && isMetricsReady && isServerReady) {
+      res.status(400).json({
+        status: 'HEALTHY BACKEND',
+        statusCode: 400,
+        Message: "All servers are UP and running"
       })
     } else {
       res.status(500).json({
