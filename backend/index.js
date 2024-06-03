@@ -97,6 +97,7 @@ app.get('/health', async (req, res) => {
 
     if(mongo && isMetricsReady && isServerReady && isFrontendLoaded) {
       res.status(200).json({
+        application_loadtime: isFrontendLoaded,
         status: 'HEALTHY',
         statusCode: 200,
         Message: "All mongodb server, metrics server and frontend application are UP and running"
