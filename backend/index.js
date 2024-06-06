@@ -19,7 +19,6 @@ const responseTime = require('response-time')
 let isDatabaseReady = false;
 let isServerReady = false;
 
-
 const app = express();
 
 // connect to database
@@ -84,31 +83,31 @@ app.use(
 // handlers or routes
 app.use('/', route)
 
-
 // health checks
 app.get('/health', async (req, res) => {
   try {
     // const mongo = await mongoose.connection.db.admin().ping(); // { ok: 1 }
     const mongo = isDatabaseReady;
     const isMetricsReady = await checkMetricsReady();
-
     if(mongo && isMetricsReady && isServerReady) {
       res.status(200).json({
         status: 'HEALTHY',
         statusCode: 200,
-        Message: "Both mongodb server and metris server are UP and  running"
+        Message: "Backend server, metrics server and MonogoDB are UP and running"
       })
     } else {
       res.status(500).json({
         status: 'UNHEALTHY',
-        statusbar: 500,
-        error: "Monogodb server and metrics are not DOWN and either or both of them are not running. Please check your codes."
+        statusCode: 500,
+        Message: "Either Server, metrics or MonogDB is DOWN. Please check your codes."
       })
     }
   }
   catch(err) {
     res.status(500).json({
       status: 'UNHEALTHY',
+      statusCode: 500,
+      Message: "Server is DOWN. Please check your codes.",
       error: err.message
     })
   }
