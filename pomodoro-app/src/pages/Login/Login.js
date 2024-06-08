@@ -1,11 +1,13 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import config from '../../config';
+import { UserContext } from '../../App';
 
 const apiUrl = config.development.apiUrl;
 
 const Login = () => {
+    const { setLoginType } = useContext(UserContext)
     const navigate = useNavigate();
     const loc = useLocation();
     const xCorrId = loc.state || null;
@@ -26,8 +28,6 @@ const Login = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const cid = xCorrId || `transaction-${Math.ceil(Math.random()*500)}`;
-        console.log(`${apiUrl}`);
-
         axios.post(`${apiUrl}/user/login`, userLogin, {
             headers: {
                 'x-correlation-id': cid
@@ -56,6 +56,8 @@ const Login = () => {
     }
 
     const loginGoogle = () => {
+        setLoginType('google');
+        sessionStorage.setItem('loginType', 'google')
         window.open(`${apiUrl}/auth/google`, "_self")
     }
 

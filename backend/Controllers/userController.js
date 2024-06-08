@@ -6,7 +6,7 @@ const ObjectId = require('mongodb').ObjectId;
 const logger = require('../Logger/logger');
 const logFormat =require('../Logger/logFormat');
 const { databaseResponseTimeHistogram, counter } = require('../Observability/metrics');
-
+const { tracer } = require('../Observability/jaegerTrace');
 // for dau
 let activeUser = new Set();
 
@@ -51,103 +51,128 @@ async function generateUserId() {
 }
 
 const signup = async (req, res) => {
+    //
+    const span = tracer.startSpan('Signup', {
+        attributes: { 'x-correlation-id': req.correlationId }
+    });
     // start metrics
     const timer = databaseResponseTimeHistogram.startTimer();
-
+    try {
     const exisitngUser = await User.findOne({ email: req.body.email });
-    if(exisitngUser) {
-        timer({operation: "New Registration", success: "false"});
-        return res.status(400).json({
-            message: "User already registered",
-            success: "warning"
-        })
-    }
-    const avt = req.body.displayName[0].toUpperCase()
-    const hashedPassword = bcrypt.hashSync(req.body.password, 8);
-    const uid = await generateUserId()
-
-    const user = new User({
-        userId: uid,
-        displayName: req.body.displayName,
-        password: hashedPassword,
-        email: req.body.email,
-        googleId: '',
-        avatar: {
-            data: avt,
-            imgType: 'text'
+        if(exisitngUser) {
+            span.addEvent('User already registered');
+            timer({operation: "New Registration", success: "false"});
+            return res.status(400).json({
+                message: "User already registered",
+                success: "warning"
+            })
         }
-    });
-    await user.save();
-    
-    //
-    const logResult = {
-        userId: user.userId,
-        statusCode: res.statusCode,
+        const avt = req.body.displayName[0].toUpperCase()
+        const hashedPassword = bcrypt.hashSync(req.body.password, 8);
+        const uid = await generateUserId()
+
+        const user = new User({
+            userId: uid,
+            displayName: req.body.displayName,
+            password: hashedPassword,
+            email: req.body.email,
+            googleId: '',
+            avatar: {
+                data: avt,
+                imgType: 'text'
+            }
+        });
+        span.addEvent('User registered successfully');
+        await user.save();
+        //
+        const logResult = {
+            userId: user.userId,
+            statusCode: res.statusCode,
+        }
+        logger.info('user registered success', logFormat(req, logResult))
+        timer({operation: "New Registration", success: "true"});
+        counter.inc();
+        return res.status(200).json({
+            message: "Registered Successfully",
+            xCorrId: req.headers['x-correlation-id'],
+            success: true
+        })
+    } catch(err) {
+        span.addEvent('Error during registration', {'error': err.message});
+        timer({operation: 'New registration', success: 'false'});
+        span.end();
     }
-    logger.info('user registered success', logFormat(req, logResult))
-    timer({operation: "New Registration", success: "true"});
-    counter.inc();
-    return res.status(200).json({
-        message: "Registered Successfully",
-        xCorrId: req.headers['x-correlation-id'],
-        success: true
-    })
 }
 
 const login = async (req, res) => {
+    //
+    const span = tracer.startSpan('Login', {
+        attributes: { 'x-correlation-id': req.correlationId }
+    });
     //start metrics
     const timer = databaseResponseTimeHistogram.startTimer();
-    const exisitngUser = await User.findOne({ email: req.body.email });
+    try {
+        const exisitngUser = await User.findOne({ email: req.body.email });
+        if (exisitngUser) {
+            // for dau
+            storeActiveUsers(exisitngUser.userId);
 
-    if (exisitngUser) {
-        // for dau
-        storeActiveUsers(exisitngUser.userId);
-
-        const comparePassword = bcrypt.compareSync(req.body.password, exisitngUser.password);
-        if (comparePassword) {
-            const payload = {
-                id: exisitngUser._id,
-                userId: exisitngUser.userId
+            const comparePassword = bcrypt.compareSync(req.body.password, exisitngUser.password);
+            if (comparePassword) {
+                const payload = {
+                    id: exisitngUser._id,
+                    userId: exisitngUser.userId
+                }
+                const user_token = jwt.sign(payload, config.secrets.jwt_key, { expiresIn: 84600 });            
+                //
+                const logResult = {
+                    userId: exisitngUser.userId,
+                    statusCode: res.statusCode,
+                }
+                logger.info('user logged in info is passed to server', logFormat(req, logResult))
+                timer({operation: "User verification", success: "true"})
+                counter.inc();
+                span.end();
+                return res.status(200).json({
+                    token: user_token,
+                    success: true
+                })
+            } else {
+                const logResult = {
+                    userId: exisitngUser.userId,
+                    statusCode: res.statusCode,
+                }
+                logger.info('Password is incorrect', logFormat(req, logResult))
+                timer({operation: "User verification - incorrect password", success: "false"})
+                counter.inc();
+                span.end();
+                return res.status(401).json({
+                    message: "Password is incorrect",
+                    success: false
+                })
             }
-            const user_token = jwt.sign(payload, config.secrets.jwt_key, { expiresIn: 84600 });            
-            //
-            const logResult = {
-                userId: exisitngUser.userId,
-                statusCode: res.statusCode,
-            }
-            logger.info('user logged in info is passed to server', logFormat(req, logResult))
-            timer({operation: "User verification", success: "true"})
-            counter.inc()
-            return res.status(200).json({
-                token: user_token,
-                success: true
-            })
         } else {
-            const logResult = {
-                userId: exisitngUser.userId,
-                statusCode: res.statusCode,
-            }
-            logger.info('Password is incorrect', logFormat(req, logResult))
-            timer({operation: "User verification - incorrect password", success: "false"})
-            counter.inc()
+            logger.info('User does not exist. Create new user', logFormat(req, res.statusCode))
+            timer({operation: "User verification - user existed", success: "false"})
+            counter.inc();
+            span.end();
             return res.status(401).json({
-                message: "Password is incorrect",
+                message: 'User does not exist. Create new user',
                 success: false
             })
         }
-    } else {
-        logger.info('User does not exist. Create new user', logFormat(req, res.statusCode))
-        timer({operation: "User verification - user existed", success: "false"})
-        counter.inc()
-        return res.status(401).json({
-            message: 'User does not exist. Create new user',
-            success: false
-        })
+    } catch(err) {
+        span.addEvent('Error during login', {'error': err.message});
+        timer({operation: 'User login credentials', success: 'false'});
+        span.end();
     }
 }
 
 
 const verifyUser = async (req, res) => {
+    const span = tracer.startSpan('VerifyUser', {
+        attributes: { 'x-correlation-id': req.correlationId }
+    });
     // start metrics
     const timer = databaseResponseTimeHistogram.startTimer();
     const token = req.headers['x-access-token'];
@@ -156,6 +181,7 @@ const verifyUser = async (req, res) => {
         logger.error('Invalid token', logFormat(req, res.statusCode))
         timer({operation: "User login - invalid token", success: "false"});
         counter.inc()
+        span.end();
         return res.status(403).json({
             message: "Invalid token",
             auth: false
@@ -166,6 +192,7 @@ const verifyUser = async (req, res) => {
             logger.error('Token generated but user is not verified', logFormat(req, res.statusCode))
             timer({operation: "Token generation is not a valid one", success: "false"});
             counter.inc();
+            span.end()
             return res.status(401).json({
                 message: "Invalid user credentials",
                 auth: false
@@ -192,39 +219,58 @@ const verifyUser = async (req, res) => {
                 logger.info('user info sent to client', logFormat(req, logResult))
                 timer({operation: "User logged in success", success: "true"});
                 counter.inc()
+                span.end();
                 res.status(200).json(payload)
             })
+            .catch(err => {
+                span.addEvent('Error in authenticating user', {'error': err.message});
+                timer({operation: 'User verification', success: 'false'});
+                counter.inc();
+                span.end();
+            });
     })
 }
 
 const updateUser = async (req, res) => {
+    const span = tracer.startSpan('UpdateUser', {
+        attributes: { 'x-correlation-id': req.correlationId }
+    });
     //start metrics
     const timer = databaseResponseTimeHistogram.startTimer();
-    const reqEmail = req.body.email;
-    const reqData = req.body;
-    let hashedPassword, update;
-    if (reqData.password) {
-        hashedPassword = bcrypt.hashSync(reqData.password, 8);
-        update = {
-            displayName: reqData.displayName,
-            password: hashedPassword
+    try {
+        const reqEmail = req.body.email;
+        const reqData = req.body;
+        let hashedPassword, update;
+        if (reqData.password) {
+            hashedPassword = bcrypt.hashSync(reqData.password, 8);
+            update = {
+                displayName: reqData.displayName,
+                password: hashedPassword
+            }
+        } else {
+            update = {
+                displayName: reqData.displayName,
+            }
         }
-    } else {
-        update = {
-            displayName: reqData.displayName,
+        const user = await User.findOneAndUpdate({ email: reqEmail }, update, { new: true })
+        
+        // logg
+        const logResult = {
+            userId: user.userId,
+            statusCode: res.statusCode,
         }
+        logger.info('updated user info', logFormat(req, logResult))
+        timer({operation: "User update profile", success: "true"});
+        counter();
+        span.end();
+        return res.status(200).json({ message: "updated your profile", result: user })
+    } catch(err) {
+        span.addEvent('Error in updating user', {'error': err.message});
+        timer({ operation: "User update profile", success: "false" });
+        counter.inc();
+        span.end();
     }
-    const user = await User.findOneAndUpdate({ email: reqEmail }, update, { new: true })
     
-    // logg
-    const logResult = {
-        userId: user.userId,
-        statusCode: res.statusCode,
-    }
-    logger.info('updated user info', logFormat(req, logResult))
-    timer({operation: "User update profile", success: "true"});
-    counter();
-    return res.status(200).json({ message: "updated your profile", result: user })
 }
 
 module.exports = {

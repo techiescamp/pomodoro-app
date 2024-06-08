@@ -2,8 +2,12 @@ const logger = require('../Logger/logger');
 const logFormat = require('../Logger/logFormat');
 const TaskTracker = require('../Model/timerModel');
 const { databaseResponseTimeHistogram, counter } = require('../Observability/metrics');
+const { tracer } = require('../Observability/jaegerTrace');
 
 const checkTodayTasks = async (req, res) => {
+    const span = tracer.startSpan('check today tasks', {
+        attributes: { 'x-correlation-id': req.correlationId }
+    });
     const timer = databaseResponseTimeHistogram.startTimer();
     const presentDate = new Date().toLocaleString('en-US').split(", ")[0]
     if(presentDate === req.body.date) {
@@ -15,12 +19,16 @@ const checkTodayTasks = async (req, res) => {
         // Filtering userTasks objects based on the presentDate
         const userTasksForPresentDate = allUserTasks.filter(task => task.date === presentDate);
         timer({operation: 'Checking todays tasks', success: 'true'});
-        counter.inc()
+        counter.inc();
+        span.end();
         res.status(200).send(userTasksForPresentDate[0] ? userTasksForPresentDate[0].tasks : null);
     }
 }
 
 const userTasks = async (req, res) => {
+    const span = tracer.startSpan('create new task', {
+        attributes: { 'x-correlation-id': req.correlationId }
+    });
     const timer = databaseResponseTimeHistogram.startTimer();
     try {
         let existingUser = await TaskTracker.findOne({ "userData.email": req.body.userData.email })
@@ -68,17 +76,23 @@ const userTasks = async (req, res) => {
         logger.info('Created user-task', logFormat(req, logResult));
         timer({operation: "Tasks are saved in database", success: 'true'})
         counter.inc()
+        span.end();
         return res.status(200).send('Submitted');
     }
     catch (err) {
+        span.addEvent('Error during creating tasks', {'error': err.message});
         logger.error('Error exception in user-tasks', err);
         timer({operation: 'Exception error', success: 'false'})
-        counter.inc()
+        counter.inc();
+        span.end();
         res.status(400).send('User needs to login to save tasks')
     }
 }
 
 const tasks = async (req, res) => {
+    const span = tracer.startSpan('User task list', {
+        attributes: { 'x-correlation-id': req.correlationId }
+    });
     try {
         const timer = databaseResponseTimeHistogram.startTimer();
         const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email })
@@ -91,16 +105,20 @@ const tasks = async (req, res) => {
             logger.info('sent task-list to browser', logFormat(req, logResult));
             timer({operation: 'Tasks are sent to client', success: 'true'})
             counter.inc()
+            span.end();
             return res.status(200).send(existingUser)
         } else {
             timer({operation: 'Failed to sent Tasks to the client', success: 'false'})
             counter.inc()
+            span.end();
             logger.error('Wrong email-id. Please log again', logFormat(req, req.body.email))
         }
     }
     catch (err) {
+        span.addEvent('Error during new task creation', {'error': err.message});
         timer({operation: 'Exception error', success: 'false'})
         counter.inc()
+        span.end();
         logger.error('Tasklist did not sent to client', logFormat(req, err))
     }
 }

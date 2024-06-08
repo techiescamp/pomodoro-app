@@ -63,13 +63,13 @@ function startMetricsServer() {
 
     const collectDefaultMetrics = client.collectDefaultMetrics;
     collectDefaultMetrics({ register });
-
+  
     app.use(cors({
         origin: ['http://localhost:3000'],
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-        allowedHeaders: ['Content-Type', 'Accept', 'x-access-token', 'x-correlation-id'],
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Accept', 'X-Access-Token', 'X-Correlation-ID', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials'],
         credentials: true
-    }));
+      }));
 
     app.use(express.json());
 
@@ -113,7 +113,8 @@ function startMetricsServer() {
         uptimeGauge.set(process.uptime());
     }, 1000)
   
-    app.listen(7100, "localhost", () => {
+    app.listen(7100, "localhost", (err, client) => {
+        if(err) return logger.error('Server is not connected', err);
         isMetricsReady = true
     //   console.log(`Metrics server started at ${config.observability.metrics_url}`);
       logger.info(`Metrics server started at ${config.observability.metrics_url}`);

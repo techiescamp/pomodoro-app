@@ -13,7 +13,8 @@ const { startMetricsServer, responseTimeHistogram } = require('./Observability/m
 // logger
 const uuid = require('uuid');
 const logger = require('./Logger/logger');
-const responseTime = require('response-time')
+const responseTime = require('response-time');
+const correlationIdMiddleware = require('./middlewares/correlationid');
 
 // health check variable
 let isDatabaseReady = false;
@@ -36,22 +37,23 @@ app.use(cors({
 }));
 
 // log middleware
-app.use((req, res, next) => {
-  const correlationId = req.headers['x-correlation-id'] || Math.ceil(Math.random() * 2000);
-  const requestId = uuid.v4();
+app.use(correlationIdMiddleware)
+// app.use((req, res, next) => {
+//   const correlationId = req.headers['x-correlation-id'] || Math.ceil(Math.random() * 2000);
+//   const requestId = uuid.v4();
 
-  req.correlationId = correlationId;
-  req.requestId = requestId;
+//   req.correlationId = correlationId;
+//   req.requestId = requestId;
 
-  res.setHeader('x-correlation-id', correlationId);
-  res.setHeader('x-req-id', requestId);
+//   res.setHeader('x-correlation-id', correlationId);
+//   res.setHeader('x-req-id', requestId);
 
-  logger.defaultMeta = {
-    correlationId,
-    requestId,
-  }
-  next();
-})
+//   logger.defaultMeta = {
+//     correlationId,
+//     requestId,
+//   }
+//   next();
+// })
 
 // session middleware
 app.use(session({
@@ -169,10 +171,10 @@ app.get('/ready', async (req, res) => {
   }
 });
 
-
+// prometheus starts here
+startMetricsServer();
 
 app.listen(PORT, (err, client) => {
-  startMetricsServer();
   if (err) {
     logger.error('Server is not connected', err)
   }
@@ -182,6 +184,7 @@ app.listen(PORT, (err, client) => {
     isDatabaseReady = true;
     logger.info('MongoDB database is connected.')
   }
+
 })
 
 module.exports = app;
