@@ -54,7 +54,7 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
         return `T${timestamp + randString}`
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (todo) {
             const newTodo = {
@@ -71,6 +71,12 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
             act: 0,
             checked: false
         });
+        // Increment the taskCreatedCounter
+        try {
+            await axios.post(`${apiUrl}/metrics/incrementTaskCounter`);
+        } catch (error) {
+            console.error('Error incrementing task counter:', error);
+        }
     }
 
     const handleUpdate = (e) => {

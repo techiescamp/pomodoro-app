@@ -3,20 +3,23 @@ const config = require('../config');
 const Subscribers = require('../Model/subscriberModel');
 const logger = require('../Logger/logger');
 const logFormat = require('../Logger/logFormat');
-const { databaseResponseTimeHistogram, counter } = require('../Observability/metrics');
-
+const metrics = require('../Observability/metrics');
 
 const subscribe = async (req, res) => {
-    const timer = databaseResponseTimeHistogram.startTimer();
-    const exisitngUser = await Subscribers.findOne({email: req.body.email});
+    metrics.httpRequestCounter.inc()
+    
+    const queryStartTime = process.hrtime();
+    const existingUser = await Subscribers.findOne({email: req.body.email});
+    //
+    const queryEndTime = process.hrtime(queryStartTime);
+    const queryDuration = queryEndTime[0] * 1e9 + queryEndTime[1];
+    metrics.databaseQueryDurationHistogram.observe({operation: 'Subscribers - findOne', success: existingUser ? 'true': 'false'}, queryDuration / 1e9);
+    
     const logResult = {
-        userId: exisitngUser.userId,
+        userId: existingUser.userId,
         statusCode: res.statusCode,
     }
-    if(exisitngUser) {
-        timer({operation: "Subscription - you are already registered", success: 'true'})
-        counter.inc()
-        
+    if(existingUser) {
         logger.info('User already subscribed to our pomodoro app', logFormat(req, logResult))
         return res.status(200).send('Already regsitered to our newletter :)');
     } else {
@@ -25,8 +28,6 @@ const subscribe = async (req, res) => {
             emailId: req.body.email,
             statusCode: res.statusCode
         }
-        timer({operation: "Subscription - user subscribed successfully", success: 'true'})
-        counter.inc()
         logger.info('User subscribed to our pomodoro app', logFormat(req, logResult))
         return res.status(200).send('Thank you for subscribing to our newsletter!!');
     }
@@ -34,7 +35,8 @@ const subscribe = async (req, res) => {
 }
 
 const sendMails = async(req, res) => {
-    const timer = databaseResponseTimeHistogram.startTimer();
+    metrics.httpRequestCounter.inc()
+
     const { to, subject, html } = req.body;
     const transporter = nodemailer.createTransport({
         host: 'smtppro.zoho.in',
@@ -66,8 +68,6 @@ const sendMails = async(req, res) => {
                 statusCode: res.statusCode
             }
             logger.info('Subscription Email sent to client', logFormat(req, logResult))
-            timer({operation: "Subscription - sent to user", success: 'true'})
-            counter.inc()
             return res.status(200).send("Sent mail successfully")
         }
     })
