@@ -86,11 +86,13 @@ const errorCounter = new client.Counter({
     registers: [register],
 });
 
+
 const memoryUsageGauge = new client.Gauge({
     name: 'pomodoro_memory_usage_bytes',
     help: 'Memory usage in bytes',
     registers: [register]
 });
+
 
 const cpuUsageGauge = new client.Gauge({
     name: 'pomodoro_cpu_usage_seconds',

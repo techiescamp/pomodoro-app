@@ -17,9 +17,32 @@ spec:
       - name: {{ .Release.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         ports:
-        - containerPort: {{ .Values.service.ports.http }}
         - containerPort: {{ .Values.service.ports.admin }}
         - containerPort: {{ .Values.service.ports.metrics }}
+        livenessProbe:
+          httpGet:
+            path: /live
+            port: {{ .Values.service.ports.admin }}
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: {{ .Values.service.ports.admin }}
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.service.ports.admin }}
+          periodSeconds: 30
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
         volumeMounts:
         - name: config
           mountPath: {{ .Values.configmap.mountpath}}
@@ -27,6 +50,13 @@ spec:
         envFrom:
         - secretRef:
             name: {{ .Values.secretName }}
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}
       volumes:
       - name: config
         configMap:

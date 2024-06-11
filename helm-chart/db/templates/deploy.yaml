@@ -21,6 +21,20 @@ spec:
       - image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         name: {{ .Release.Name }}
         args: ["--dbpath","/data/db"]
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 3
         env:
         - name: MONGO_INITDB_ROOT_USERNAME
           valueFrom:
@@ -35,6 +49,13 @@ spec:
         volumeMounts:
         - name: "mongo-data-dir"
           mountPath: "/data/db"
+        resources:
+          requests:
+            cpu: {{ .Values.resources.requests.cpu }}
+            memory: {{ .Values.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.resources.limits.cpu }}
+            memory: {{ .Values.resources.limits.memory }}
       volumes:
       - name: "mongo-data-dir"
         persistentVolumeClaim:
