@@ -4,9 +4,10 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const ObjectId = require('mongodb').ObjectId;
 const logger = require('../Logger/logger');
-const logFormat =require('../Logger/logFormat');
-const { databaseResponseTimeHistogram, counter } = require('../Observability/metrics');
+const logFormat = require('../Logger/logFormat');
 const { tracer } = require('../Observability/jaegerTrace');
+const metrics = require('../Observability/metrics');
+ 
 // for dau
 let activeUser = new Set();
 
@@ -14,12 +15,15 @@ const storeActiveUsers = (userId) => {
     if(userId) {
         activeUser.add(userId);
         console.log(`No.of users visited: ${activeUser.size}`)
+        // set activeuser gauge
+        metrics.activeUsersGauge.set(activeUser.size);
     } else {
         res.status(400).send('user ID required')
     }
     const resetActiveUser = () => {
         activeUser = new Set();
-        console.log('active user reset')
+        console.log('active user reset');
+        metrics.activeUsersGauge.set(0)
     }
     const scheduleDailyReset = () => {
         const now = new Date();
@@ -56,12 +60,14 @@ const signup = async (req, res) => {
         attributes: { 'x-correlation-id': req.correlationId }
     });
     // start metrics
-    const timer = databaseResponseTimeHistogram.startTimer();
+    metrics.httpRequestCounter.inc();
+
     try {
-    const exisitngUser = await User.findOne({ email: req.body.email });
+        const queryStartTime = process.hrtime();
+        const exisitngUser = await User.findOne({ email: req.body.email });
+        
         if(exisitngUser) {
             span.addEvent('User already registered');
-            timer({operation: "New Registration", success: "false"});
             return res.status(400).json({
                 message: "User already registered",
                 success: "warning"
@@ -85,21 +91,27 @@ const signup = async (req, res) => {
         span.addEvent('User registered successfully');
         await user.save();
         //
+        const queryEndTime = process.hrtime(queryStartTime);
+        const queryDuration = queryEndTime[0] * 1e9 + queryEndTime[1];
+        metrics.databaseQueryDurationHistogram.observe({operation: 'new user - findOne', success: exisitngUser ? 'false': 'true'}, queryDuration / 1e9);
+        
+        //
         const logResult = {
             userId: user.userId,
             statusCode: res.statusCode,
         }
-        logger.info('user registered success', logFormat(req, logResult))
-        timer({operation: "New Registration", success: "true"});
-        counter.inc();
+        logger.info('user registered success', logFormat(req, logResult));
+        //
+        metrics.newUsersCounter.inc();
         return res.status(200).json({
             message: "Registered Successfully",
             xCorrId: req.headers['x-correlation-id'],
             success: true
         })
     } catch(err) {
+        metrics.errorCounter.inc();
+        logger.error('Error in registration')
         span.addEvent('Error during registration', {'error': err.message});
-        timer({operation: 'New registration', success: 'false'});
         span.end();
     }
 }
@@ -109,14 +121,19 @@ const login = async (req, res) => {
     const span = tracer.startSpan('Login', {
         attributes: { 'x-correlation-id': req.correlationId }
     });
-    //start metrics
-    const timer = databaseResponseTimeHistogram.startTimer();
+    metrics.httpRequestCounter.inc();
+
     try {
+        const queryStartTime = process.hrtime();
         const exisitngUser = await User.findOne({ email: req.body.email });
+        //
+        const queryEndTime = process.hrtime(queryStartTime);
+        const queryDuration = queryEndTime[0] * 1e9 + queryEndTime[1];
+        metrics.databaseQueryDurationHistogram.observe({operation: 'user login - findOne', success: exisitngUser ? 'true': 'false'}, queryDuration / 1e9);
+        
         if (exisitngUser) {
             // for dau
             storeActiveUsers(exisitngUser.userId);
-
             const comparePassword = bcrypt.compareSync(req.body.password, exisitngUser.password);
             if (comparePassword) {
                 const payload = {
@@ -130,8 +147,6 @@ const login = async (req, res) => {
                     statusCode: res.statusCode,
                 }
                 logger.info('user logged in info is passed to server', logFormat(req, logResult))
-                timer({operation: "User verification", success: "true"})
-                counter.inc();
                 span.end();
                 return res.status(200).json({
                     token: user_token,
@@ -142,9 +157,8 @@ const login = async (req, res) => {
                     userId: exisitngUser.userId,
                     statusCode: res.statusCode,
                 }
-                logger.info('Password is incorrect', logFormat(req, logResult))
-                timer({operation: "User verification - incorrect password", success: "false"})
-                counter.inc();
+                logger.info('Password is incorrect', logFormat(req, logResult));
+                metrics.errorCounter.inc();
                 span.end();
                 return res.status(401).json({
                     message: "Password is incorrect",
@@ -153,17 +167,16 @@ const login = async (req, res) => {
             }
         } else {
             logger.info('User does not exist. Create new user', logFormat(req, res.statusCode))
-            timer({operation: "User verification - user existed", success: "false"})
-            counter.inc();
             span.end();
+            metrics.errorCounter.inc();
             return res.status(401).json({
                 message: 'User does not exist. Create new user',
                 success: false
             })
         }
     } catch(err) {
+        metrics.errorCounter.inc();
         span.addEvent('Error during login', {'error': err.message});
-        timer({operation: 'User login credentials', success: 'false'});
         span.end();
     }
 }
@@ -174,60 +187,62 @@ const verifyUser = async (req, res) => {
         attributes: { 'x-correlation-id': req.correlationId }
     });
     // start metrics
-    const timer = databaseResponseTimeHistogram.startTimer();
+    metrics.httpRequestCounter.inc()
+
     const token = req.headers['x-access-token'];
     if (!token) {
         //
         logger.error('Invalid token', logFormat(req, res.statusCode))
-        timer({operation: "User login - invalid token", success: "false"});
-        counter.inc()
         span.end();
         return res.status(403).json({
             message: "Invalid token",
             auth: false
         })
     }
-    jwt.verify(token, config.secrets.jwt_key, (err, result) => {
+    jwt.verify(token, config.secrets.jwt_key, async (err, result) => {
+        console.log(result);
         if (err) {
             logger.error('Token generated but user is not verified', logFormat(req, res.statusCode))
-            timer({operation: "Token generation is not a valid one", success: "false"});
-            counter.inc();
+            metrics.errorCounter.inc();
             span.end()
             return res.status(401).json({
                 message: "Invalid user credentials",
                 auth: false
             })
         }
+        try{
+            const queryStartTime = process.hrtime();
+            const user = await User.findOne({ _id: new ObjectId(result.id) });
+            console.log(user);
+            //
+            const queryEndTime = process.hrtime(queryStartTime);
+            const queryDuration = queryEndTime[0] * 1e9 + queryEndTime[1];
+            metrics.databaseQueryDurationHistogram.observe({operation: 'user login - findOne', success: user ? 'true': 'false'}, queryDuration / 1e9);
 
-        User.findOne({ _id: new ObjectId(result.id) })
-            .then(result => {
-                const payload = {
-                    xCorrId: req.headers['X-Correlation-ID'],
-                    message:'userlogged in successfully',
-                    success: true,
-                    avatar: result.avatar,
-                    googleId: result.googleId,
-                    userId: result.userId,
-                    email: result.email,
-                    displayName: result.displayName 
-                }
-                //
-                const logResult = {
-                    userId: result.userId,
-                    statusCode: res.statusCode,
-                }
-                logger.info('user info sent to client', logFormat(req, logResult))
-                timer({operation: "User logged in success", success: "true"});
-                counter.inc()
-                span.end();
-                res.status(200).json(payload)
-            })
-            .catch(err => {
-                span.addEvent('Error in authenticating user', {'error': err.message});
-                timer({operation: 'User verification', success: 'false'});
-                counter.inc();
-                span.end();
-            });
+            const payload = {
+                xCorrId: req.headers['X-Correlation-ID'],
+                message: 'user logged in successfully',
+                success: true,
+                avatar: user.avatar,
+                googleId: user.googleId,
+                userId: user.userId,
+                email: user.email,
+                displayName: user.displayName
+            }
+            //
+            const logResult = {
+                userId: user.userId,
+                statusCode: res.statusCode,
+            }
+            logger.info('user info sent to client', logFormat(req, logResult))
+            span.end();
+            res.status(200).json(payload)
+        }
+        catch (err) {
+            span.addEvent('Error in authenticating user', { 'error': err.message });
+            metrics.errorCounter.inc();
+            span.end();
+        }
     })
 }
 
@@ -236,7 +251,8 @@ const updateUser = async (req, res) => {
         attributes: { 'x-correlation-id': req.correlationId }
     });
     //start metrics
-    const timer = databaseResponseTimeHistogram.startTimer();
+    metrics.httpRequestCounter.inc();
+
     try {
         const reqEmail = req.body.email;
         const reqData = req.body;
@@ -252,7 +268,12 @@ const updateUser = async (req, res) => {
                 displayName: reqData.displayName,
             }
         }
+        const queryStartTime = process.hrtime();
         const user = await User.findOneAndUpdate({ email: reqEmail }, update, { new: true })
+        //
+        const queryEndTime = process.hrtime(queryStartTime);
+        const queryDuration = queryEndTime[0] * 1e9 + queryEndTime[1];
+        metrics.databaseQueryDurationHistogram.observe({operation: 'update user - findOneAndUpdate', success: user ? 'true': 'false'}, queryDuration / 1e9);
         
         // logg
         const logResult = {
@@ -260,18 +281,16 @@ const updateUser = async (req, res) => {
             statusCode: res.statusCode,
         }
         logger.info('updated user info', logFormat(req, logResult))
-        timer({operation: "User update profile", success: "true"});
-        counter();
         span.end();
         return res.status(200).json({ message: "updated your profile", result: user })
     } catch(err) {
+        logger.error('Error in updating user info')
         span.addEvent('Error in updating user', {'error': err.message});
-        timer({ operation: "User update profile", success: "false" });
-        counter.inc();
+        metrics.errorCounter.inc();
         span.end();
     }
-    
 }
+
 
 module.exports = {
     signup: signup,

@@ -24,7 +24,6 @@ const Settings = () => {
     const [msg, setMsg] = useState('')
     const [isNotify, setIsNotify] = useState(false)
 
-
     const handleProfile = (e) => {
         setProfile({...profile, [e.target.name]: e.target.value})
     }

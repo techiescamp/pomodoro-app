@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import config from '../../config';
 import { UserContext } from '../../App';
@@ -9,8 +9,7 @@ const apiUrl = config.development.apiUrl;
 const Login = () => {
     const { setLoginType } = useContext(UserContext)
     const navigate = useNavigate();
-    const loc = useLocation();
-    const xCorrId = loc.state || null;
+    const xCorrId = sessionStorage.getItem('xCorrId') || null;
 
     const [status, setStatus] = useState(false);
     const [userLogin, setUserLogin] = useState({
@@ -27,7 +26,7 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const cid = xCorrId || `transaction-${Math.ceil(Math.random()*500)}`;
+        const cid = xCorrId || `pomo-${Math.ceil(Math.random()*500)}`;
         axios.post(`${apiUrl}/user/login`, userLogin, {
             headers: {
                 'x-correlation-id': cid
@@ -36,8 +35,8 @@ const Login = () => {
         .then(res => {
             axios.post(`${apiUrl}/user/verifyUser`, res.data, {
                 headers: {
-                    'X-Correlation-ID': cid,
-                    'X-Access-Token': res.data.token
+                    'x-correlation-id': cid,
+                    'x-access-token': res.data.token
                 }
             })
             .then(res => {
@@ -57,6 +56,8 @@ const Login = () => {
 
     const loginGoogle = () => {
         setLoginType('google');
+        const cid = xCorrId || `transaction-${Math.ceil(Math.random()*500)}`;
+        sessionStorage.setItem('xCorrId', cid);  
         sessionStorage.setItem('loginType', 'google')
         window.open(`${apiUrl}/auth/google`, "_self")
     }

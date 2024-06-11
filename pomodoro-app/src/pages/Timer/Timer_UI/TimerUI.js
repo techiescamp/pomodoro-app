@@ -72,8 +72,8 @@ const TimerUI = ({ finish, setFinish }) => {
             intervalId = setInterval(() => {
                 setTimer(prev => prev > 0 ? prev - 1 : 0)
             }, 1000);
-            // 
             if (timer === 0 && timerName === 'timer') {
+                axios.post('http://localhost:7000/metrics', {timername: 'timer'})
                 if(alarmAudio) {
                     alarmAudio.play()
                 }
@@ -95,6 +95,14 @@ const TimerUI = ({ finish, setFinish }) => {
                 sessionStorage.setItem('todo', JSON.stringify(tos))
                 setTodo(tos)
                 handleStop();
+            } else if(timer === 0 && timerName === 'short') {                
+                alarmAudio.play();
+                axios.post('http://localhost:7000/metrics', {timername: 'short'})
+                handleStop(); 
+            } else if(timer === 0 && timerName === 'long') {
+                alarmAudio.play();
+                axios.post('http://localhost:7000/metrics', {timername: 'long'})
+                handleStop();
             }
         }
         return () => {
@@ -105,13 +113,10 @@ const TimerUI = ({ finish, setFinish }) => {
     useEffect(() => {
         // set date and finished tasks
         sessionStorage.setItem('date', JSON.stringify(new Date().toLocaleString('en-US').split(", ")[0]))
-        // const prevCheckedtasks = JSON.parse(sessionStorage.getItem('checkedTasks'));
-        // const allTasks = prevCheckedtasks !== null ? [...prevCheckedtasks, ...finish] : [...finish];
-        
         // task info
         if (finish.length !== 0 && user) {
             try {
-                axios.post(`${apiUrl}/user-tasks`, {
+                axios.post(`${apiUrl}/createTask`, {
                     date: JSON.parse(sessionStorage.getItem('date')),
                     userData: user,
                     userTasks: finish,
@@ -120,7 +125,6 @@ const TimerUI = ({ finish, setFinish }) => {
                         'x-correlation-id': xCorrId
                     }
                 })
-                // .then(result => setMessage(result.data))
             } catch(err) {
                 setMessage(err.message)
             }       
@@ -142,7 +146,6 @@ const TimerUI = ({ finish, setFinish }) => {
         const timeFormat = `${String(minutes)}:${String(seconds).padStart(2, '0')}`
         return timeFormat
     }
-
 
     return (
         <MyTimerContext.Provider value={{ isActive, setIsActive, setTimer, setTimerName }}>
