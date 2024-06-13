@@ -12,49 +12,45 @@ import axios from 'axios';
 import config from './config';
 
 export const UserContext = createContext();
-const apiUrl = config.development.apiUrl;
+const apiUrl = config.apiUrl;
 
 function App() {
   const [user, setUser] = useState(() => {
     const getUser = JSON.parse(sessionStorage.getItem('userinfo')) || null;
-    return getUser ? getUser : null
+    const getGoogleUser = JSON.parse(sessionStorage.getItem('guser')) || null
+    return getUser ? getUser : getGoogleUser
   });
-  const [xCorrId, setXCorrId] = useState(null);
+  const [xCorrId, setXCorrId] = useState(() => {
+    return sessionStorage.getItem('xCorrId') || null  
+  });
   const [ loginType, setLoginType ] = useState(() => {
     return sessionStorage.getItem('loginType') || 'custom';
   });
 
   useEffect(() => {
-    const fetchUser = async () => {
-      if (user) {
-        setXCorrId(user.xCorrId);
-      }
-      const correlationId = `transaction-${Math.ceil(Math.random() * 500)}`;
-      if(loginType === 'google') {
-          const response = await axios.get(`${apiUrl}/auth/login/success`, {
-            withCredentials: 'include',
-            headers: {
-              'x-correlation-id': correlationId,
-              'Content-Type': 'application/json',
-              "Access-Control-Allow-Credentials": true
-            }
-          })
-          if(response.status !== 200) {
-            return;
-          } else {
-            const guser = {
-              displayName: response.data.user.displayName,
-              email: response.data.user.email
-            }
-            sessionStorage.setItem('guser', JSON.stringify(guser))
-            setUser(response.data.user)
-            setXCorrId(response.data.corrId);
-          }
-        }
+    if (user) {
+      setXCorrId(user.xCorrId);
     }
-  
-    fetchUser();
+    if (loginType === 'google') {
+      fetchGoogleUser();
+    }
   },[user, loginType])
+
+  function fetchGoogleUser() {
+    axios.get(`${apiUrl}/auth/login/success`, {
+      withCredentials: 'include',
+      headers: {
+        'x-correlation-id': xCorrId,
+        'Content-Type': 'application/json',
+        "Access-Control-Allow-Credentials": true
+      }
+    })
+    .then(response => {
+      sessionStorage.setItem('guser', JSON.stringify(response.data.user))
+      setXCorrId(sessionStorage.getItem('xCorrId'));
+      return setUser(response.data.user)
+    })
+  }
 
   return (
     <UserContext.Provider value={{ user, setUser, xCorrId, setXCorrId, setLoginType }}>

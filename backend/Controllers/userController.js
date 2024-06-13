@@ -109,9 +109,9 @@ const signup = async (req, res) => {
             success: true
         })
     } catch(err) {
+        span.addEvent('Error during registration', {'error': err.message});
         metrics.errorCounter.inc();
         logger.error('Error in registration')
-        span.addEvent('Error during registration', {'error': err.message});
         span.end();
     }
 }
@@ -146,6 +146,7 @@ const login = async (req, res) => {
                     userId: exisitngUser.userId,
                     statusCode: res.statusCode,
                 }
+                span.addEvent('user logged', { requestBody: JSON.stringify(logResult) })
                 logger.info('user logged in info is passed to server', logFormat(req, logResult))
                 span.end();
                 return res.status(200).json({
@@ -157,6 +158,7 @@ const login = async (req, res) => {
                     userId: exisitngUser.userId,
                     statusCode: res.statusCode,
                 }
+                span.addEvent('login password incorrect', { requestBody: JSON.stringify(logResult) })
                 logger.info('Password is incorrect', logFormat(req, logResult));
                 metrics.errorCounter.inc();
                 span.end();
@@ -166,17 +168,18 @@ const login = async (req, res) => {
                 })
             }
         } else {
+            span.addEvent('wrong user email and password', { requestBody: JSON.stringify(req.body) })
             logger.info('User does not exist. Create new user', logFormat(req, res.statusCode))
-            span.end();
             metrics.errorCounter.inc();
+            span.end();
             return res.status(401).json({
                 message: 'User does not exist. Create new user',
                 success: false
             })
         }
     } catch(err) {
-        metrics.errorCounter.inc();
         span.addEvent('Error during login', {'error': err.message});
+        metrics.errorCounter.inc();
         span.end();
     }
 }
@@ -192,6 +195,7 @@ const verifyUser = async (req, res) => {
     const token = req.headers['x-access-token'];
     if (!token) {
         //
+        span.addEvent('Invalid login token');
         logger.error('Invalid token', logFormat(req, res.statusCode))
         span.end();
         return res.status(403).json({
@@ -200,8 +204,8 @@ const verifyUser = async (req, res) => {
         })
     }
     jwt.verify(token, config.secrets.jwt_key, async (err, result) => {
-        console.log(result);
         if (err) {
+            span.addEvent('valid token', {requestBody: JSON.stringify(result)});
             logger.error('Token generated but user is not verified', logFormat(req, res.statusCode))
             metrics.errorCounter.inc();
             span.end()
@@ -213,14 +217,13 @@ const verifyUser = async (req, res) => {
         try{
             const queryStartTime = process.hrtime();
             const user = await User.findOne({ _id: new ObjectId(result.id) });
-            console.log(user);
             //
             const queryEndTime = process.hrtime(queryStartTime);
             const queryDuration = queryEndTime[0] * 1e9 + queryEndTime[1];
             metrics.databaseQueryDurationHistogram.observe({operation: 'user login - findOne', success: user ? 'true': 'false'}, queryDuration / 1e9);
 
             const payload = {
-                xCorrId: req.headers['X-Correlation-ID'],
+                xCorrId: req.headers['x-correlation-id'],
                 message: 'user logged in successfully',
                 success: true,
                 avatar: user.avatar,
@@ -234,6 +237,7 @@ const verifyUser = async (req, res) => {
                 userId: user.userId,
                 statusCode: res.statusCode,
             }
+            span.addEvent('user profile sent to browser', {requestBody: JSON.stringify(logResult)});
             logger.info('user info sent to client', logFormat(req, logResult))
             span.end();
             res.status(200).json(payload)
@@ -280,12 +284,13 @@ const updateUser = async (req, res) => {
             userId: user.userId,
             statusCode: res.statusCode,
         }
+        span.addEvent('upated user profile', {requestBody: JSON.stringify(logResult)});
         logger.info('updated user info', logFormat(req, logResult))
         span.end();
         return res.status(200).json({ message: "updated your profile", result: user })
     } catch(err) {
-        logger.error('Error in updating user info')
         span.addEvent('Error in updating user', {'error': err.message});
+        logger.error('Error in updating user info')
         metrics.errorCounter.inc();
         span.end();
     }

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Timer from '../Timer/Timer';
-
+import config from '../../config';
 
 const start = performance.now();
 let loadTime = 0;
+const metrics_url = config.metrics_url;
 
 export default function Home() {
     const [errCount, setErrCount] = useState(0);
@@ -16,7 +17,7 @@ export default function Home() {
         try {
             const end = performance.now();
             loadTime = end - start;
-            await fetch('http://localhost:7000/metrics', {
+            await fetch(`${metrics_url}`, {
             method: 'POST',
             body: JSON.stringify({ app_time: loadTime, errorCount: errCount }),
             headers: {

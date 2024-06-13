@@ -1,9 +1,8 @@
 // require('dotenv').config();
 
 const config = {
-    development: {
-        apiUrl: process.env.REACT_APP_API_URL
-    },
+    apiUrl: process.env.REACT_APP_API_URL,
+    metrics_url: process.env.REACT_APP_METRICS_URL
 }
 
 export default config;

@@ -7,7 +7,7 @@ import TReport from './TReport';
 import { UserContext } from '../../../App';
 import { MyContext } from '../Timer';
 
-const apiUrl = config.development.apiUrl;
+const apiUrl = config.apiUrl;
 
 const TNavbar = () => {
     // context
@@ -16,8 +16,8 @@ const TNavbar = () => {
 
     // list modal
     const [show, setShow] = useState(false);
-    const handleShow = () => setShow(true);
     const [list, setList] = useState(null);
+    const handleShow = () => setShow(true);
 
     // report modal
     const [report, setReport] = useState(false)
@@ -30,11 +30,11 @@ const TNavbar = () => {
                     'x-correlation-id': xCorrId
                 }
             })
-                .then(res => {
-                    setList(res.data)
-                })
+            .then(res => {
+                setList(res.data)
+            })
         }
-    }, [user, count])
+    },[user, count])
 
     return (
         <div className='mb-5'>

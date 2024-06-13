@@ -10,26 +10,31 @@ import TimerButtons from './TimerButtons';
 import { UserContext } from '../../../App';
 
 export const MyTimerContext = createContext();
-const apiUrl = config.development.apiUrl
+const apiUrl = config.apiUrl
+const metrics_url = config.metrics_url;
 
 const TimerUI = ({ finish, setFinish }) => {
     const { user, xCorrId } = useContext(UserContext);
     const { todo, setTodo } = useContext(MyContext);
     const [message, setMessage] = useState(null);
-
+    
     let customTimer = sessionStorage.getItem('customTimer') ? JSON.parse(sessionStorage.getItem('customTimer')) : null;
 
     const { setCount } = useContext(MyContext);
     const [timer, setTimer] = useState(() => {
         return customTimer ? customTimer.timer * 60 : 25 * 60
     });
+    const [unTask, setUnTask] = useState({});
     const [timerName, setTimerName] = useState('timer');
     const [isActive, setIsActive] = useState(false);
 
     const clickAudio = useMemo(()=> new Audio(clickSound),[]);
     const alarmAudio = useMemo(() => new Audio(clockAlarm),[]);
 
-    const [unTask, setUnTask] = useState({});
+    function postMetrics(url, name) {
+        axios.post(url, {timername: name})
+        return;
+    }
 
     const handleStop = useCallback(() => {
         if(clickAudio) {
@@ -56,7 +61,7 @@ const TimerUI = ({ finish, setFinish }) => {
         // check for completed tasks
         const newtodo = todo.filter(f => f.checked === true)
         if(newtodo.length !== 0) {
-            setCount(prev => prev + 1)
+            setCount(newtodo.length);
             setFinish(newtodo)
             if(todo.length === newtodo.length) {
                 setMessage("Yay you completed all tasks !!");
@@ -73,10 +78,6 @@ const TimerUI = ({ finish, setFinish }) => {
                 setTimer(prev => prev > 0 ? prev - 1 : 0)
             }, 1000);
             if (timer === 0 && timerName === 'timer') {
-                axios.post('http://localhost:7000/metrics', {timername: 'timer'})
-                if(alarmAudio) {
-                    alarmAudio.play()
-                }
                 let newtodo;
                 // increase 'act' count if repeated
                 newtodo = { 
@@ -93,15 +94,16 @@ const TimerUI = ({ finish, setFinish }) => {
                     return item
                 });
                 sessionStorage.setItem('todo', JSON.stringify(tos))
-                setTodo(tos)
+                setTodo(tos);
+                alarmAudio.play();
                 handleStop();
             } else if(timer === 0 && timerName === 'short') {                
+                postMetrics(`${metrics_url}`, 'short')
                 alarmAudio.play();
-                axios.post('http://localhost:7000/metrics', {timername: 'short'})
                 handleStop(); 
             } else if(timer === 0 && timerName === 'long') {
+                postMetrics(`${metrics_url}`, 'long')
                 alarmAudio.play();
-                axios.post('http://localhost:7000/metrics', {timername: 'long'})
                 handleStop();
             }
         }

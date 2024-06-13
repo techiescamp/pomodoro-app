@@ -51,7 +51,6 @@ const Timer = () => {
 
     const handleClearAll = () => {
         setTodo([])
-        // sessionStorage.setItem('todo', []);
     }
 
     return (
