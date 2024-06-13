@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import axios from 'axios';
 import config from '../../config';
 
-const apiUrl = config.development.apiUrl;
+const apiUrl = config.apiUrl;
 
 const FooterForm = () => {
     const [subscribeEmail, setSubscribeEmail] = useState(null);

@@ -13,12 +13,12 @@ passport.use(new GoogleStrategy({
     },
     async function(accessToken, refreshToken, profile, done) {
         try {
-            const queryStartTime = hrtime();
+            const queryStartTime = process.hrtime();
             let user = await User.findOne({googleId: profile.id})
             //
             const queryEndTime = process.hrtime(queryStartTime);
             const queryDuration = queryEndTime[0] * 1e9 + queryEndTime[1];
-            metrics.databaseQueryDurationHistogram.observe({operation: 'passport.js middleware find user - findOne', success: existingUser ? 'true': 'false'}, queryDuration / 1e9);
+            metrics.databaseQueryDurationHistogram.observe({operation: 'passport.js middleware find user - findOne', success: user ? 'true': 'false'}, queryDuration / 1e9);
     
             if(!user) {
                 const logResult = {

@@ -3,21 +3,30 @@ const config = require('../config');
 const logger = require('../Logger/logger');
 const logFormat = require('../Logger/logFormat');
 const metrics = require('../Observability/metrics');
+const { tracer } = require('../Observability/jaegerTrace');
 
 const failedRoute = (req, res) => {
+    const span = tracer.startSpan('google auth failed', {
+        attributes: { 'x-correlation-id': req.correlationId }
+    });
     metrics.errorCounter.inc();
 
     const logResult = {
         statusCode: res.statusCode,
     }
+    span.addEvent('google auth failed');
     logger.error('Failed to route the login credentials', logFormat(req, logResult))
-    res.status(401).json({
+    span.end();
+    return res.status(401).json({
         success: false,
         message: "failure"
     })
 }
 
 const successRoute = (req, res) => {
+    const span = tracer.startSpan('google auth failed', {
+        attributes: { 'x-correlation-id': req.correlationId }
+    });
     metrics.httpRequestCounter.inc();
 
     if(req.user) {
@@ -25,8 +34,10 @@ const successRoute = (req, res) => {
             userId: req.user.userId,
             statusCode: res.statusCode,
         }
+        span.addEvent('User logged via google account');
         logger.info('User logged via google account', logFormat(req, logResult))
-        res.status(200).json({
+        span.end();
+        return res.status(200).json({
             success: true,
             message: "successfull",
             user: req.user,
@@ -51,14 +62,19 @@ const getGoogleCallback = (req, res, next) => {
 
 
 const googleLogout = (req, res) => {
+    const span = tracer.startSpan('user logout', {
+        attributes: { 'x-correlation-id': req.correlationId }
+    });
     metrics.httpRequestCounter.inc();
 
     const logResult = {
         statusCode: res.statusCode,
         responseTime: res.responseTime
     }
+    span.addEvent('User logged out!!')
     logger.info('User logged out!', logFormat(req, logResult));
-    req.logout(function(err) {
+    span.end();
+    return req.logout(function(err) {
         if(err) return next(err)
         res.status(200).redirect(config.urls.baseUrl)
     })

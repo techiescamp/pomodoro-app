@@ -12,6 +12,7 @@ const checkTodayTasks = async (req, res) => {
     
     const presentDate = new Date().toLocaleString('en-US').split(", ")[0]
     if(presentDate === req.body.date) {
+        span.addEvent('user logged again today', {requestBody: JSON.stringify({date: req.body.date, email: req.body.email})});
         const queryStartTime = process.hrtime();
         let existingUser = await TaskTracker.find({"userTasks.date": req.body.date, "userData.email": req.body.email }, {"userTasks": 1})
         //
@@ -55,6 +56,7 @@ const createTask = async (req, res) => {
 
         // to add new user
         if (!existingUser) {
+            span.addEvent('new user - new task created');
             const queryStartTime = process.hrtime();
             const doc = await TaskTracker.create(payload);
             doc.save();
@@ -75,12 +77,14 @@ const createTask = async (req, res) => {
                     tasks: [...req.body.userTasks]
                 }
                 existingUser.userTasks.push(newTask)
+                span.addEvent('Existing user - new day - new task created', {requestBody: JSON.stringify({date: req.body.date, user: req.body.userData.email})})
             } else {
                 // if same date or date is found
                 const task = existingUser.userTasks[oldT].tasks;
                 task.push(...payload.userTasks[0].tasks);
                 const uniqueTasks = task.filter((obj, index) => index === task.findIndex(o => o.id === obj.id))
                 existingUser.userTasks[oldT].tasks = uniqueTasks;
+                span.addEvent('Existing user - same day - new task created', {requestBody: JSON.stringify({date: req.body.date, user: req.body.userData.email})})
             }
             const queryStartTime = process.hrtime();
             const doc = await TaskTracker.findOneAndUpdate(filter, existingUser, options);
@@ -129,20 +133,22 @@ const tasks = async (req, res) => {
             statusCode: res.statusCode,
         }
         if (existingUser) {
+            span.addEvent('user task list sent to browser', {requestBody: req.body.email})
             logger.info('sent task-list to browser', logFormat(req, logResult));
             span.end();
             return res.status(200).send(existingUser)
         } else {
+            span.addEvent('Failed to send user task list to browser', {requestBody: req.body.email})
             metrics.errorCounter.inc()
-            span.end();
             logger.error('Wrong email-id. Please log again', logFormat(req, req.body.email))
+            span.end();
         }
     }
     catch (err) {
         span.addEvent('Error during new task creation', {'error': err.message});
         metrics.errorCounter.inc()
-        span.end();
         logger.error('Tasklist did not sent to client', logFormat(req, err))
+        span.end();
     }
 }
 

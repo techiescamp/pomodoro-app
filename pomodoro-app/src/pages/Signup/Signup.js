@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import config from '../../config';
 
-const apiUrl = config.development.apiUrl;
+const apiUrl = config.apiUrl;
 
 const Signup = () => {
     const navigate = useNavigate();

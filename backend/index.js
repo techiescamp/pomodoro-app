@@ -6,22 +6,12 @@ const passport = require('passport');
 const config = require('./config');
 const route = require('./Routes/route');
 const PORT = config.server.port;
-//
-const os = require('os');
-const client = require('prom-client');
-const metrics = require('./Observability/metrics');
-
-require('./middlewares/passport');
-
-// observability
-// const { startMetricsServer, responseTimeHistogram } = require('./Observability/metrics');
-// logger
-const uuid = require('uuid');
+// logger & observability
 const logger = require('./Logger/logger');
 const responseTime = require('response-time');
 const correlationIdMiddleware = require('./middlewares/correlationid');
-const { timeEnd } = require('console');
-const { cpuUsage } = require('process');
+const client = require('prom-client');
+const metrics = require('./Observability/metrics');
 
 // health check variable
 let isDatabaseReady = false;
@@ -46,6 +36,8 @@ app.use(cors({
 // log middleware
 app.use(correlationIdMiddleware)
 
+// passport and oauth middleware
+require('./middlewares/passport');
 // session middleware
 app.use(session({
   secret: config.session.secret,
@@ -56,7 +48,6 @@ app.use(session({
 // passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 // http response time for each routes
 app.use(
@@ -74,7 +65,7 @@ app.use(
   })
 );
 
-// http response time per route in
+// http response time per route in histogram
 app.use((req, res, next) => {
   metrics.httpRequestCounter.inc({ method: req.method, route: req.path, statusCode: res.statusCode });
   const responseTimeStart = process.hrtime();
@@ -108,7 +99,6 @@ const updateMetrics = () => {
 // update memory metrics for every 60 seconds
 setInterval(updateMetrics, 10000)
 
-
 // Expose the metrics endpoint
 app.get('/metrics', async (req, res) => {
   res.set('Content-Type', metrics.register.contentType);
@@ -117,12 +107,14 @@ app.get('/metrics', async (req, res) => {
 
 app.post("/metrics", (req, res) => {
   const client = req.body;
-  console.log(client);
   if (typeof client.app_time === 'number') {
     metrics.pageLoadTimeGauge.set(client.app_time / 1000);
   }
   if(client.errorCount) {
     metrics.clientErrorCounter.inc();
+  }
+  if(client.download === 'download') {
+    metrics.downloadReportsCounter.inc();
   }
   if(client.timername === 'short') {
     metrics.shortBreakCounter.inc();
@@ -137,13 +129,6 @@ app.post("/metrics", (req, res) => {
 
 // handlers or routes
 app.use('/', route)
-
-let taskCounter = 0;
-app.post('/metrics/incrementTaskCounter', (req, res) => {
-  taskCounter++;
-  metrics.tasksCreatedCounter.inc();
-  return res.status(200).send('Task created');
-});
 
 // health checks
 app.get('/health', async (req, res) => {

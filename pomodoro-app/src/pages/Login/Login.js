@@ -4,12 +4,12 @@ import axios from 'axios';
 import config from '../../config';
 import { UserContext } from '../../App';
 
-const apiUrl = config.development.apiUrl;
+const apiUrl = config.apiUrl;
 
 const Login = () => {
-    const { setLoginType } = useContext(UserContext)
+    const { xCorrId, setXCorrId, setLoginType } = useContext(UserContext)
     const navigate = useNavigate();
-    const xCorrId = sessionStorage.getItem('xCorrId') || null;
+    // const xCorrId = sessionStorage.getItem('xCorrId') || null;
 
     const [status, setStatus] = useState(false);
     const [userLogin, setUserLogin] = useState({
@@ -26,7 +26,7 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const cid = xCorrId || `pomo-${Math.ceil(Math.random()*500)}`;
+        const cid = xCorrId || `pomo-${Math.ceil(Math.random()*1000)}`;
         axios.post(`${apiUrl}/user/login`, userLogin, {
             headers: {
                 'x-correlation-id': cid
@@ -55,9 +55,9 @@ const Login = () => {
     }
 
     const loginGoogle = () => {
+        const correlationId = `pomo-${Math.ceil(Math.random() * 500)}`;
+        sessionStorage.setItem('xCorrId', correlationId);
         setLoginType('google');
-        const cid = xCorrId || `transaction-${Math.ceil(Math.random()*500)}`;
-        sessionStorage.setItem('xCorrId', cid);  
         sessionStorage.setItem('loginType', 'google')
         window.open(`${apiUrl}/auth/google`, "_self")
     }
@@ -69,9 +69,9 @@ const Login = () => {
     }
     function getColor() {
         if (status.success) {
-            return '#83f28f'
+            return 'green'
         } else {
-            return '#FFC1C3'
+            return 'red'
         }
     }
 

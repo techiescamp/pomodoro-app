@@ -1,5 +1,4 @@
 const client = require('prom-client');
-
 // Create a new registry for the metrics
 let register = new client.Registry();
 
@@ -18,7 +17,6 @@ const longBreakCounter = new client.Counter({
     registers: [register]
 });
 
-
 // user metrics
 // --------------
 const activeUsersGauge = new client.Gauge({
@@ -32,7 +30,6 @@ const newUsersCounter = new client.Counter({
     help: 'Number of new users',
     registers: [register]
 });
-
 
 // tasks metrics
 // ----------------
@@ -48,6 +45,11 @@ const tasksCompletedCounter = new client.Counter({
     registers: [register]
 });
 
+const downloadReportsCounter = new client.Counter({
+    name: 'pomodoro_download_reports_total',
+    help: 'Number reports downloaded',
+    registers: [register]
+})
 
 // application performance metrics
 // ---------------------------------
@@ -86,13 +88,11 @@ const errorCounter = new client.Counter({
     registers: [register],
 });
 
-
 const memoryUsageGauge = new client.Gauge({
     name: 'pomodoro_memory_usage_bytes',
     help: 'Memory usage in bytes',
     registers: [register]
 });
-
 
 const cpuUsageGauge = new client.Gauge({
     name: 'pomodoro_cpu_usage_seconds',
@@ -123,6 +123,7 @@ module.exports = {
     newUsersCounter,
     tasksCompletedCounter,
     tasksCreatedCounter,
+    downloadReportsCounter,
     httpRequestCounter,
     httpRequestDurationHistogram,
     databaseQueryDurationHistogram,

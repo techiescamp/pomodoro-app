@@ -6,11 +6,13 @@ import config from '../../../config';
 import axios from 'axios';
 import { UserContext } from '../../../App';
 
-const apiUrl = config.development.apiUrl
+const apiUrl = config.apiUrl;
+const metrics_url = config.metrics_url;
 
 const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
     const { todo, setTodo } = useContext(MyContext);
     const { user, xCorrId } = useContext(UserContext);
+    
     const todayDate = JSON.parse(sessionStorage.getItem('date'));
     const checkedTasks = sessionStorage.getItem('checkedTasks') ? JSON.parse(sessionStorage.getItem('checkedTasks')) : [];
     const todaysTask = sessionStorage.getItem('todaysTask') ? JSON.parse(sessionStorage.getItem('todaysTask')) : [];
@@ -28,9 +30,9 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
                 // if(checkedTasks || todaysTask) {
                     const combinedTasks = [...res.data, ...checkedTasks, ...todaysTask];
                     const uniqueTask = combinedTasks.filter((obj, index) => index === combinedTasks.findIndex(o => o.id === obj.id)) 
+                    console.log('todays-task: ', uniqueTask);
                     sessionStorage.setItem('todaysTask', JSON.stringify(uniqueTask))
                 // }
-                
                 // if(checkedTasks) {
                 //     sessionStorage.setItem('todaysTask', JSON.stringify([...res.data, ...checkedTasks]))
                 // } else {
@@ -54,7 +56,7 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
         return `T${timestamp + randString}`
     }
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         if (todo) {
             const newTodo = {
@@ -73,7 +75,8 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
         });
         // Increment the taskCreatedCounter
         try {
-            await axios.post(`${apiUrl}/metrics/incrementTaskCounter`);
+            axios.post(`${metrics_url}`, {timername: 'timer'});
+            return;
         } catch (error) {
             console.error('Error incrementing task counter:', error);
         }

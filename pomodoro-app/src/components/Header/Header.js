@@ -3,14 +3,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Header.css';
 import { UserContext } from '../../App';
 import config from '../../config';
+import axios from 'axios';
 
-const apiUrl = config.development.apiUrl;
+const apiUrl = config.apiUrl;
 
 function Header() {
-  const navigate = useNavigate();
   const loc = useLocation();
 
-  const { user, setUser, setXCorrId } = useContext(UserContext);
+  const { user, setUser, xCorrId } = useContext(UserContext);
   const usersession = JSON.parse(sessionStorage.getItem('userInfo')) || null;
   const gusersession = JSON.parse(sessionStorage.getItem('guser')) || null;
 
@@ -18,10 +18,8 @@ function Header() {
     const getUser = async () => {
       if(usersession) {
         setUser(usersession)
-        // setXCorrId(usersession.xCorrId)
       } else if(gusersession) {
         setUser(usersession)
-        // setXCorrId(usersession.setXCorrId)
       } else {
         setUser(null)
       }
@@ -30,9 +28,19 @@ function Header() {
   },[loc])
 
   const handlelogout = () => {
-    window.open(`${apiUrl}/auth/logout`, "_self");
     sessionStorage.clear();
-    navigate('/');
+    fetch(`${apiUrl}/auth/logout`, {
+      method: 'GET',
+      headers: {
+        'x-correlation-id': usersession.xCorrId || xCorrId
+      }
+    })
+    .then(res => {
+      if(res.ok) {
+        window.location.href = '/'
+      }
+    })
+    .catch(err => console.error('Error in logout: ', err.message));
   }
 
   return (
@@ -75,10 +83,10 @@ function Header() {
               </ul>
             : (
             <ul className="navbar-nav justify-content-lg-end">
-              <li className="nav-item me-lg-4 mb-2 mb-lg-0">
+              <li className="nav-item mx-auto me-lg-4 mb-2 mb-lg-0">
                 <Link className="nav-link" to="/login">Login</Link>
               </li>
-              <li className="nav-item me-lg-4 mb-2 mb-lg-0">
+              <li className="nav-item mx-auto me-lg-4 mb-2 mb-lg-0">
                 <Link className="nav-link" to="/signup">Signup</Link>
               </li>
             </ul>)
