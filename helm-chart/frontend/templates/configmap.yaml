@@ -6,12 +6,8 @@ metadata:
 data:
   config.js: |
     const config = {
-      development: {
-        apiUrl: "{{ .Values.backend_url }}"
-      },
-      production: {
-        apiUrl: ''
-      }
+        apiUrl: "{{ .Values.backend_url }}",
+        metrics_url: "{{ .Values.backend_metrics_url }}"
     };
 
     export default config;

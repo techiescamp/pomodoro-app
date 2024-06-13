@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: techiescamp/pomodoro
-  tag: "6.0.0"
+  tag: "7.0.0"
   pullPolicy: IfNotPresent
 
 configmap:
@@ -15,6 +15,7 @@ service:
   nodeport: 32749
 
 backend_url: http://34.71.163.101:30163
+backend_metrics_url: http://34.71.163.101:30163/metrics
 
 ## Network Policy
 
