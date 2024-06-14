@@ -12,6 +12,7 @@ const responseTime = require('response-time');
 const correlationIdMiddleware = require('./middlewares/correlationid');
 const client = require('prom-client');
 const metrics = require('./Observability/metrics');
+// const apiMetrics = require('prometheus-api-metrics');
 
 // health check variable
 let isDatabaseReady = false;
@@ -76,6 +77,8 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+// app.use(apiMetrics());
 
 // Collect default metrics
 const collectDefaultMetrics = client.collectDefaultMetrics;

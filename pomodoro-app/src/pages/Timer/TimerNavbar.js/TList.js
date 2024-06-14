@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import html2pdf from 'html2pdf.js';
 import config from '../../../config';
 import axios from 'axios';
+import { tracer } from '../../../utils/Tracer/Trace';
 
 const metrics_url = config.metrics_url;
 
@@ -12,6 +13,9 @@ const TList = ({user, show, setShow, list}) => {
     const handleClose = () => setShow(false);
 
     const downloadbtn = async () => {
+        const span = tracer.startSpan('frontend timer - download task list');
+        span.setAttribute('component', 'TList Component');
+
         const tb = document.getElementById('tableList');
         var options = {
             filename: 'pomodoro_reports.pdf',
@@ -31,6 +35,7 @@ const TList = ({user, show, setShow, list}) => {
         }
         html2pdf().set(options).from(tb).save();
         await axios.post(`${metrics_url}`, { download: 'download' })
+        span.end()
         return;
     }
 

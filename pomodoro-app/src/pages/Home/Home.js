@@ -7,6 +7,7 @@ let loadTime = 0;
 const metrics_url = config.metrics_url;
 
 export default function Home() {
+
     const [errCount, setErrCount] = useState(0);
 
     useEffect(() => {
@@ -30,7 +31,7 @@ export default function Home() {
         };
         sendLoadTimeToBackend();
     },[loadTime, errCount]);
-
+    
     return (
         <Timer/>
     )
