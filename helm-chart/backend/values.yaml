@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: techiescamp/pomodoro
-  tag: "7.1.0"
+  tag: "8.1.0"
   pullPolicy: IfNotPresent
 
 service:
@@ -10,8 +10,6 @@ service:
   ports:
     admin: 7000
     admin_nodeport: 30163
-    metrics: 7100
-    metrics_nodeport: 31106
 
 configmap:
   mountpath: /app/config.js

@@ -1,21 +1,21 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import './settings.css'
 import { UserContext } from '../../App';
 import config from '../../config';
 
-const apiUrl = config.development.apiUrl
+const apiUrl = config.apiUrl
 
 const Settings = () => {
     const { user, xCorrId } = useContext(UserContext);
+    console.log(user);
 
-    const initialValue = {
-        displayName: user.displayName,
-        email: user.email,
+    const [profile, setProfile] = useState({
+        displayName: user ? user.displayName : null,
+        email: user ? user.email : null,
         password: '',
-        avatar: user.avatar,
+        avatar: user ? user.avatar : null,
         msg: ''
-    }
-    const [profile, setProfile] = useState(initialValue);
+    });
     const [customTime, setCustomTime] = useState({
         timer: 25,
         short_break: 5,
@@ -23,7 +23,6 @@ const Settings = () => {
     })
     const [msg, setMsg] = useState('')
     const [isNotify, setIsNotify] = useState(false)
-
 
     const handleProfile = (e) => {
         setProfile({...profile, [e.target.name]: e.target.value})

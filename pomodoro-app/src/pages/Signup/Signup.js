@@ -2,11 +2,9 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import config from '../../config';
 
-const apiUrl = config.development.apiUrl;
+const apiUrl = config.apiUrl;
 
 const Signup = () => {
-    console.log(`${apiUrl}`);
-
     const navigate = useNavigate();
     const [status, setStatus] = useState(false);
     const [userDetails, setUserDetails] = useState({
@@ -24,7 +22,7 @@ const Signup = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const cid = `transaction-${Math.ceil(Math.random()*200)}`;
+        const cid = `pomo-${Math.ceil(Math.random()*200)}`;
         fetch(`${apiUrl}/user/signup`, {
             method: 'POST',
             body: JSON.stringify(userDetails),
@@ -37,7 +35,8 @@ const Signup = () => {
             .then(data => {
                 setStatus(data);
                 if(data.success === true) {
-                    navigate("/login", {state: data.xCorrId})
+                    sessionStorage.setItem('xCorrId', data.xCorrId)
+                    navigate("/login")
                 }
             });
 

@@ -43,7 +43,7 @@ const Timer = () => {
             checkedTasks = [...getTodos]
         }
         sessionStorage.setItem('checkedTasks', JSON.stringify(checkedTasks));
-        // filter un-chekced tasks and sent to list
+        // filter un-checked tasks and sent to list
         const newTodo = todo.filter(t => t.checked !== true)
         setTodo(newTodo)
         sessionStorage.setItem('todo', JSON.stringify(newTodo));
@@ -51,7 +51,6 @@ const Timer = () => {
 
     const handleClearAll = () => {
         setTodo([])
-        // sessionStorage.setItem('todo', []);
     }
 
     return (
@@ -85,7 +84,7 @@ const Timer = () => {
 
                         {/* Finish Button */}
                         <div className='text-start' id='finish'>
-                            <p className='text-white px-3 py-2 fw-bold border border-1' onClick={handleAddTask}>
+                            <p className='text-white px-3 py-2 fw-bold border border-1'>
                                 Finished: {count === 0 ? 0 : count} task completed
                             </p>
                         </div>

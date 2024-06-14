@@ -3,11 +3,15 @@ import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import html2pdf from 'html2pdf.js';
+import config from '../../../config';
+import axios from 'axios';
+
+const metrics_url = config.metrics_url;
 
 const TList = ({user, show, setShow, list}) => {
     const handleClose = () => setShow(false);
 
-    const downloadbtn = () => {
+    const downloadbtn = async () => {
         const tb = document.getElementById('tableList');
         var options = {
             filename: 'pomodoro_reports.pdf',
@@ -25,7 +29,9 @@ const TList = ({user, show, setShow, list}) => {
                 scale: 2
             }
         }
-        html2pdf().set(options).from(tb).save()
+        html2pdf().set(options).from(tb).save();
+        await axios.post(`${metrics_url}`, { download: 'download' })
+        return;
     }
 
     return (

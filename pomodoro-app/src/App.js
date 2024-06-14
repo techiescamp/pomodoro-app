@@ -1,5 +1,5 @@
 import './App.css';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import Home from './pages/Home/Home';
 import Settings from './pages/Settings/Settings';
 import Login from './pages/Login/Login';
@@ -12,51 +12,48 @@ import axios from 'axios';
 import config from './config';
 
 export const UserContext = createContext();
-const apiUrl = config.development.apiUrl;
+const apiUrl = config.apiUrl;
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [xCorrId, setXCorrId] = useState(null);
-
-  const loc = useLocation();
-  const getUser = JSON.parse(sessionStorage.getItem('userinfo')) || null;
+  const [user, setUser] = useState(() => {
+    const getUser = JSON.parse(sessionStorage.getItem('userinfo')) || null;
+    const getGoogleUser = JSON.parse(sessionStorage.getItem('guser')) || null
+    return getUser ? getUser : getGoogleUser
+  });
+  const [xCorrId, setXCorrId] = useState(() => {
+    return sessionStorage.getItem('xCorrId') || null  
+  });
+  const [ loginType, setLoginType ] = useState(() => {
+    return sessionStorage.getItem('loginType') || 'custom';
+  });
 
   useEffect(() => {
-    const getUserInfo = async () => {
-      try {
-        if (getUser) {
-          setUser(getUser);
-          setXCorrId(getUser.xCorrId);
-        }
-        const correlationId = `transaction-${Math.ceil(Math.random() * 500)}`;
-        const response = await axios.get(`${apiUrl}/auth/login/success`, {
-          withCredentials: 'include',
-          headers: {
-            'x-correlation-id': correlationId,
-            'Content-Type': 'application/json',
-            // 'Access-Control-Allow-Credentials': true
-          }
-        })
-        if (!response) {
-          return;
-        }
-        const { data } = response;
-        const guser = {
-          displayName: data.user.displayName,
-          email: data.user.email
-        }
-        sessionStorage.setItem('guser', JSON.stringify(guser))
-        setUser(data.user)
-        setXCorrId(data.corrId);
-      } catch (err) {
-        console.error('Network error: ', err)
-      }
+    if (user) {
+      setXCorrId(user.xCorrId);
     }
-    getUserInfo()
-  },[loc, getUser])
+    if (loginType === 'google') {
+      fetchGoogleUser();
+    }
+  },[user, loginType])
+
+  function fetchGoogleUser() {
+    axios.get(`${apiUrl}/auth/login/success`, {
+      withCredentials: 'include',
+      headers: {
+        'x-correlation-id': xCorrId,
+        'Content-Type': 'application/json',
+        "Access-Control-Allow-Credentials": true
+      }
+    })
+    .then(response => {
+      sessionStorage.setItem('guser', JSON.stringify(response.data.user))
+      setXCorrId(sessionStorage.getItem('xCorrId'));
+      return setUser(response.data.user)
+    })
+  }
 
   return (
-    <UserContext.Provider value={{ user, setUser, xCorrId, setXCorrId }}>
+    <UserContext.Provider value={{ user, setUser, xCorrId, setXCorrId, setLoginType }}>
       <div className='App'>
         <Header />
         <Routes>

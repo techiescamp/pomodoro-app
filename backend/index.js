@@ -6,14 +6,12 @@ const passport = require('passport');
 const config = require('./config');
 const route = require('./Routes/route');
 const PORT = config.server.port;
-require('./middlewares/passport');
-
-// observability
-const { startMetricsServer, responseTimeHistogram } = require('./Observability/metrics');
-// logger
-const uuid = require('uuid');
+// logger & observability
 const logger = require('./Logger/logger');
-const responseTime = require('response-time')
+const responseTime = require('response-time');
+const correlationIdMiddleware = require('./middlewares/correlationid');
+const client = require('prom-client');
+const metrics = require('./Observability/metrics');
 
 // health check variable
 let isDatabaseReady = false;
@@ -36,23 +34,10 @@ app.use(cors({
 }));
 
 // log middleware
-app.use((req, res, next) => {
-  const correlationId = req.headers['x-correlation-id'] || Math.ceil(Math.random() * 2000);
-  const requestId = uuid.v4();
+app.use(correlationIdMiddleware)
 
-  req.correlationId = correlationId;
-  req.requestId = requestId;
-
-  res.setHeader('x-correlation-id', correlationId);
-  res.setHeader('x-req-id', requestId);
-
-  logger.defaultMeta = {
-    correlationId,
-    requestId,
-  }
-  next();
-})
-
+// passport and oauth middleware
+require('./middlewares/passport');
 // session middleware
 app.use(session({
   secret: config.session.secret,
@@ -64,11 +49,11 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// response time middleware for prometheus
+// http response time for each routes
 app.use(
   responseTime((req, res, time) => {
     if (req?.route?.path) {
-      responseTimeHistogram.observe(
+      metrics.httpRequestDurationHistogram.observe(
         {
           method: req.method,
           route: req.route.path,
@@ -80,6 +65,68 @@ app.use(
   })
 );
 
+// http response time per route in histogram
+app.use((req, res, next) => {
+  metrics.httpRequestCounter.inc({ method: req.method, route: req.path, statusCode: res.statusCode });
+  const responseTimeStart = process.hrtime();
+  res.once('finish', () => {
+      const responseTimeEnd = process.hrtime(responseTimeStart);
+      const responseTime = responseTimeEnd[0] * 1000000000 + responseTimeEnd[1];
+      metrics.httpRequestDurationHistogram.observe({ method: req.method, route: req.path, status_code: res.statusCode }, responseTime / 1000000000);
+  });
+  next();
+});
+
+// Collect default metrics
+const collectDefaultMetrics = client.collectDefaultMetrics;
+let reg = metrics.register
+collectDefaultMetrics({ reg });
+
+const updateMetrics = () => {
+  //app uptime
+  metrics.appUptimeGauge.set(process.uptime());
+
+  // memory use in bytes
+  const memoryUsage = process.memoryUsage().heapTotal / (1024 * 1024);
+  metrics.memoryUsageGauge.set(memoryUsage);
+
+  // cpu use in ratio
+  const cpu = process.cpuUsage();
+  const cpuUsageValue = cpu.user + cpu.system;
+  metrics.cpuUsageGauge.set(cpuUsageValue);
+}
+
+// update memory metrics for every 60 seconds
+setInterval(updateMetrics, 10000)
+
+// Expose the metrics endpoint
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', metrics.register.contentType);
+  res.end(await metrics.register.metrics());
+});
+
+app.post("/metrics", (req, res) => {
+  const client = req.body;
+  if (typeof client.app_time === 'number') {
+    metrics.pageLoadTimeGauge.set(client.app_time / 1000);
+  }
+  if(client.errorCount) {
+    metrics.clientErrorCounter.inc();
+  }
+  if(client.download === 'download') {
+    metrics.downloadReportsCounter.inc();
+  }
+  if(client.timername === 'short') {
+    metrics.shortBreakCounter.inc();
+  } else if(client.timername === 'long') {
+    metrics.longBreakCounter.inc();
+  } else if(client.timername === 'timer') {
+    metrics.tasksCreatedCounter.inc();
+  }
+  return res.status(200).send('client metrics recorded');
+});
+
+
 // handlers or routes
 app.use('/', route)
 
@@ -88,8 +135,7 @@ app.get('/health', async (req, res) => {
   try {
     // const mongo = await mongoose.connection.db.admin().ping(); // { ok: 1 }
     const mongo = isDatabaseReady;
-    const isMetricsReady = await checkMetricsReady();
-    if(mongo && isMetricsReady && isServerReady) {
+    if(mongo && isServerReady) {
       res.status(200).json({
         status: 'HEALTHY',
         statusCode: 200,
@@ -112,17 +158,6 @@ app.get('/health', async (req, res) => {
     })
   }
 })
-async function checkMetricsReady() {
-  try{
-    const response = await fetch('http://localhost:7100/metrics/ready');
-    const data = await response.json();
-    return data.status === 'OK';
-  }
-  catch(err) {
-    console.error('Error checking metrics server health: ', err);
-    return false;
-  }
-}
 
 app.get('/live', (req, res) => {
   if(isServerReady && isDatabaseReady) {
@@ -141,24 +176,11 @@ app.get('/live', (req, res) => {
 });
 
 app.get('/ready', async (req, res) => {
-  const isMetricsReady = await checkMetricsReady();
-  if(isMetricsReady && isServerReady) {
+  if(isServerReady) {
     res.status(200).json({
       status: 'UP and LIVE',
       statusCode: 200,
-      message: "Metrics server and Backend server is ready and running"
-    })
-  } else if(isMetricsReady && !isServerReady) {
-    res.status(500).json({
-      status: 'DOWN and NOT LIVE',
-      statusCode: 500,
-      message: "Metrics server is LIVE and Backend server is NOT LIVE"
-    })
-  } else if(!isMetricsReady && isServerReady) {
-    res.status(500).json({
-      status: 'DOWN and NOT LIVE',
-      statusCode: 500,
-      message: "Metrics server is NOT LIVE and Backend server is LIVE"
+      message: "Backend server is ready and running"
     })
   } else {
     res.status(500).json({
@@ -170,9 +192,7 @@ app.get('/ready', async (req, res) => {
 });
 
 
-
 app.listen(PORT, (err, client) => {
-  startMetricsServer();
   if (err) {
     logger.error('Server is not connected', err)
   }
@@ -183,5 +203,6 @@ app.listen(PORT, (err, client) => {
     logger.info('MongoDB database is connected.')
   }
 })
+
 
 module.exports = app;

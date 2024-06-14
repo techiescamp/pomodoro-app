@@ -10,26 +10,31 @@ import TimerButtons from './TimerButtons';
 import { UserContext } from '../../../App';
 
 export const MyTimerContext = createContext();
-const apiUrl = config.development.apiUrl
+const apiUrl = config.apiUrl
+const metrics_url = config.metrics_url;
 
 const TimerUI = ({ finish, setFinish }) => {
     const { user, xCorrId } = useContext(UserContext);
     const { todo, setTodo } = useContext(MyContext);
     const [message, setMessage] = useState(null);
-
+    
     let customTimer = sessionStorage.getItem('customTimer') ? JSON.parse(sessionStorage.getItem('customTimer')) : null;
 
     const { setCount } = useContext(MyContext);
     const [timer, setTimer] = useState(() => {
         return customTimer ? customTimer.timer * 60 : 25 * 60
     });
+    const [unTask, setUnTask] = useState({});
     const [timerName, setTimerName] = useState('timer');
     const [isActive, setIsActive] = useState(false);
 
     const clickAudio = useMemo(()=> new Audio(clickSound),[]);
     const alarmAudio = useMemo(() => new Audio(clockAlarm),[]);
 
-    const [unTask, setUnTask] = useState({});
+    function postMetrics(url, name) {
+        axios.post(url, {timername: name})
+        return;
+    }
 
     const handleStop = useCallback(() => {
         if(clickAudio) {
@@ -56,7 +61,7 @@ const TimerUI = ({ finish, setFinish }) => {
         // check for completed tasks
         const newtodo = todo.filter(f => f.checked === true)
         if(newtodo.length !== 0) {
-            setCount(prev => prev + 1)
+            setCount(newtodo.length);
             setFinish(newtodo)
             if(todo.length === newtodo.length) {
                 setMessage("Yay you completed all tasks !!");
@@ -72,11 +77,7 @@ const TimerUI = ({ finish, setFinish }) => {
             intervalId = setInterval(() => {
                 setTimer(prev => prev > 0 ? prev - 1 : 0)
             }, 1000);
-            // 
             if (timer === 0 && timerName === 'timer') {
-                if(alarmAudio) {
-                    alarmAudio.play()
-                }
                 let newtodo;
                 // increase 'act' count if repeated
                 newtodo = { 
@@ -93,7 +94,16 @@ const TimerUI = ({ finish, setFinish }) => {
                     return item
                 });
                 sessionStorage.setItem('todo', JSON.stringify(tos))
-                setTodo(tos)
+                setTodo(tos);
+                alarmAudio.play();
+                handleStop();
+            } else if(timer === 0 && timerName === 'short') {                
+                postMetrics(`${metrics_url}`, 'short')
+                alarmAudio.play();
+                handleStop(); 
+            } else if(timer === 0 && timerName === 'long') {
+                postMetrics(`${metrics_url}`, 'long')
+                alarmAudio.play();
                 handleStop();
             }
         }
@@ -105,13 +115,10 @@ const TimerUI = ({ finish, setFinish }) => {
     useEffect(() => {
         // set date and finished tasks
         sessionStorage.setItem('date', JSON.stringify(new Date().toLocaleString('en-US').split(", ")[0]))
-        // const prevCheckedtasks = JSON.parse(sessionStorage.getItem('checkedTasks'));
-        // const allTasks = prevCheckedtasks !== null ? [...prevCheckedtasks, ...finish] : [...finish];
-        
         // task info
         if (finish.length !== 0 && user) {
             try {
-                axios.post(`${apiUrl}/user-tasks`, {
+                axios.post(`${apiUrl}/createTask`, {
                     date: JSON.parse(sessionStorage.getItem('date')),
                     userData: user,
                     userTasks: finish,
@@ -120,7 +127,6 @@ const TimerUI = ({ finish, setFinish }) => {
                         'x-correlation-id': xCorrId
                     }
                 })
-                // .then(result => setMessage(result.data))
             } catch(err) {
                 setMessage(err.message)
             }       
@@ -142,7 +148,6 @@ const TimerUI = ({ finish, setFinish }) => {
         const timeFormat = `${String(minutes)}:${String(seconds).padStart(2, '0')}`
         return timeFormat
     }
-
 
     return (
         <MyTimerContext.Provider value={{ isActive, setIsActive, setTimer, setTimerName }}>
