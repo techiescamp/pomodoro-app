@@ -8,6 +8,7 @@ import config from '../../../config';
 import TimerNav from './TimerNav';
 import TimerButtons from './TimerButtons';
 import { UserContext } from '../../../App';
+import { tracer } from '../../../utils/Tracer/Trace';
 
 export const MyTimerContext = createContext();
 const apiUrl = config.apiUrl
@@ -113,6 +114,9 @@ const TimerUI = ({ finish, setFinish }) => {
     }, [isActive, timer, customTimer, handleStop, alarmAudio, setTodo, timerName, todo, unTask])
 
     useEffect(() => {
+        const span = tracer.startSpan('frontend timer - task sending to server to store in db');
+        span.setAttribute('component', 'TimerUI Component');
+
         // set date and finished tasks
         sessionStorage.setItem('date', JSON.stringify(new Date().toLocaleString('en-US').split(", ")[0]))
         // task info
@@ -129,7 +133,9 @@ const TimerUI = ({ finish, setFinish }) => {
                 })
             } catch(err) {
                 setMessage(err.message)
+                span.end();
             }       
+            span.end();
         }
     }, [finish, user, xCorrId])
 
