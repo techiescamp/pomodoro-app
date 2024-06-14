@@ -19,13 +19,13 @@ diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
 // create jaeger exporter
 const exporter = new JaegerExporter({
     tags: [],
-    serviceName: 'pomo-demo-app',
+    serviceName: 'backend-traces',
     endpoint: `${config.observability.jaeger_trace_url}/api/traces`
 })
 
 const provider = new NodeTracerProvider({
     resource: new Resource({
-        [SemanticResourceAttributes.SERVICE_NAME]: 'pomo-demo-app'
+        [SemanticResourceAttributes.SERVICE_NAME]: 'backend-traces'
     }),
 })
 
@@ -48,6 +48,6 @@ registerInstrumentations({
 });
 
 //
-const tracer = provider.getTracer('test-pomodoro-app');
+const tracer = provider.getTracer('backend-traces');
 
 module.exports = { tracer };
