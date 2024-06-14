@@ -3,11 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import config from '../../config';
 import { UserContext } from '../../App';
+//
+import { tracer } from '../../utils/Tracer/Trace';
 
 const apiUrl = config.apiUrl;
 
 const Login = () => {
-    const { xCorrId, setXCorrId, setLoginType } = useContext(UserContext)
+    const { xCorrId, setLoginType } = useContext(UserContext)
     const navigate = useNavigate();
     // const xCorrId = sessionStorage.getItem('xCorrId') || null;
 
@@ -26,6 +28,9 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const span = tracer.startSpan('frontend login');
+        span.setAttribute('component', 'Login Component');
+
         const cid = xCorrId || `pomo-${Math.ceil(Math.random()*1000)}`;
         axios.post(`${apiUrl}/user/login`, userLogin, {
             headers: {
@@ -42,11 +47,16 @@ const Login = () => {
             .then(res => {
                 setStatus(res.data)
                 sessionStorage.setItem('userInfo', JSON.stringify(res.data))
+                span.end();
                 navigate('/')
             })
         })
         .catch(err => {
-            setStatus(err.response.data)
+            console.log(err)
+            if(err.code === 'ERR_NETWORK') {
+                setStatus(err.message);
+            }
+            span.end();
         })
         setUserLogin({
             email: '',
@@ -80,7 +90,7 @@ const Login = () => {
             <div className="form-container mx-auto pt-5">
                 <div className='form-wrapper mx-auto border border-outline-secondary p-2 bg-light'>
                     <h3 className='m-3'>LOGIN FORM</h3>
-                    {status ? <p style={inlineStyle}>{status.message}</p> : null}
+                    {status ? <p style={inlineStyle}>{status.message ? status.message : status}</p> : null}
 
                     <form onSubmit={handleSubmit}>
                         <div className='w-75 mx-auto'>

@@ -22,7 +22,6 @@ const exporter = new JaegerExporter({
     serviceName: 'pomo-demo-app',
     endpoint: `${config.observability.jaeger_trace_url}/api/traces`
 })
-// serviceName: 'my-pomodoro-app',
 
 const provider = new NodeTracerProvider({
     resource: new Resource({
