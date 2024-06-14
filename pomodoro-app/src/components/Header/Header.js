@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Header.css';
 import { UserContext } from '../../App';
 import config from '../../config';
-import axios from 'axios';
+import { tracer } from '../../utils/Tracer/Trace';
 
 const apiUrl = config.apiUrl;
 
@@ -28,6 +28,9 @@ function Header() {
   },[loc])
 
   const handlelogout = () => {
+    const span = tracer.startSpan('frontend timer - logout');
+    span.setAttribute('component', 'Header Component');
+
     sessionStorage.clear();
     fetch(`${apiUrl}/auth/logout`, {
       method: 'GET',
@@ -37,10 +40,14 @@ function Header() {
     })
     .then(res => {
       if(res.ok) {
+        span.end();
         window.location.href = '/'
       }
     })
-    .catch(err => console.error('Error in logout: ', err.message));
+    .catch(err => {
+      console.error('Error in logout: ', err.message)
+      span.end();
+    });
   }
 
   return (
