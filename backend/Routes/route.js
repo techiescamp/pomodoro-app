@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { checkTodayTasks, createTask, tasks } = require('../Controllers/timerController');
+const { checkTodayTasks, createTask } = require('../Controllers/timerController');
 const { signup, login, verifyUser, updateUser } = require('../Controllers/userController');
 const { failedRoute, successRoute, getGoogleAuth, googleLogout, getGoogleCallback } = require('../Controllers/authController');
 const { sendMails, subscribe } = require('../Controllers/mailController');
@@ -11,7 +11,6 @@ const route = express.Router();
 // timer route
 route.post('/checkTodayTasks', checkTodayTasks)
 route.post('/createTask', createTask);
-route.post('/tasks', tasks);
 
 
 // user routes

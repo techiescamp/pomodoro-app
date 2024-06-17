@@ -11,7 +11,7 @@ const provider = new WebTracerProvider();
 // Configure the OTLP exporter
 const collectorOptions = {
   serviceName: 'frontend-traces',
-  url: `${config.jaeger_trace_url}/api/traces`, // Adjust this URL to point to your Jaeger or OpenTelemetry Collector OTLP endpoint
+  url: `${config.apiUrl}/traces`, // Adjust this URL to point to your Jaeger or OpenTelemetry Collector OTLP endpoint
 };
 
 const exporter = new OTLPTraceExporter(collectorOptions);

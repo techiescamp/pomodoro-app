@@ -113,48 +113,8 @@ const createTask = async (req, res) => {
     }
 }
 
-const tasks = async (req, res) => {
-    const span = tracer.startSpan('User task list', {
-        attributes: { 'x-correlation-id': req.correlationId }
-    });
-    metrics.httpRequestCounter.inc()
-    
-    try {
-        const queryStartTime = process.hrtime();
-        const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email })
-        //
-        const queryEndTime = process.hrtime(queryStartTime);
-        const queryDuration = queryEndTime[0] * 1e9 + queryEndTime[1];
-        metrics.databaseQueryDurationHistogram.observe({operation: 'Task list - findOne', success: existingUser ? 'true': 'false'}, queryDuration / 1e9);
-        
-        const logResult = {
-            userId: req.body.useId,
-            emailId: req.body.email,
-            statusCode: res.statusCode,
-        }
-        if (existingUser) {
-            span.addEvent('user task list sent to browser', {requestBody: req.body.email})
-            logger.info('sent task-list to browser', logFormat(req, logResult));
-            span.end();
-            return res.status(200).send(existingUser)
-        } else {
-            span.addEvent('Failed to send user task list to browser', {requestBody: req.body.email})
-            metrics.errorCounter.inc()
-            logger.error('Wrong email-id. Please log again', logFormat(req, req.body.email))
-            span.end();
-        }
-    }
-    catch (err) {
-        span.addEvent('Error during new task creation', {'error': err.message});
-        metrics.errorCounter.inc()
-        logger.error('Tasklist did not sent to client', logFormat(req, err))
-        span.end();
-    }
-}
-
 
 module.exports = {
     checkTodayTasks: checkTodayTasks,
     createTask: createTask,
-    tasks: tasks
 }

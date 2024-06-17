@@ -27,7 +27,6 @@ const config = {
         password: process.env.ZOHO_PASSWORD
     },
     observability: {
-        metrics_url: process.env.METRICS_URI,
         jaeger_trace_url: process.env.JAEGER_TRACE_URI
     }
 }
