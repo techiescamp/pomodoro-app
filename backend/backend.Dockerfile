@@ -4,15 +4,13 @@ FROM node:20.12.2-alpine
 WORKDIR /app
 
 # Copy files from local to the work directory
-COPY /pomodoro-app/public ./public
-COPY /pomodoro-app/src ./src
-COPY /pomodoro-app/package*.json ./
+COPY . .
 
 # Install all dependencies
 RUN npm install
 
-# Expose port
-EXPOSE 3000
+# Expose package
+EXPOSE 7000
 
 # Command to run the application
 CMD ["npm", "start"]
