@@ -118,9 +118,10 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
     //
-    const span = tracer.startSpan('Login', {
-        attributes: { 'x-correlation-id': req.correlationId }
-    });
+    await callReportTrace();
+    // const span = tracer.startSpan('Login', {
+    //     attributes: { 'x-correlation-id': req.correlationId }
+    // });
     metrics.httpRequestCounter.inc();
 
     try {

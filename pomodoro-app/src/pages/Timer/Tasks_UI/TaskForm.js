@@ -5,7 +5,6 @@ import '../Timer.css';
 import config from '../../../config';
 import axios from 'axios';
 import { UserContext } from '../../../App';
-import { tracer } from '../../../utils/Tracer/Trace';
 
 const apiUrl = config.apiUrl;
 const metrics_url = config.metrics_url;
@@ -21,9 +20,6 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
     useEffect(() => {
          // if user logged again today ? integrate old tasks to today's tasks 
         if(user) {
-            const span = tracer.startSpan('frontend timer - checks if user logged again');
-            span.setAttribute('component', 'TaskForm Component');
-
             axios.post(`${apiUrl}/checkTodayTasks`, 
                 {date: todayDate, email: user.email}, {
                 headers: {
@@ -35,7 +31,6 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
                     const combinedTasks = [...res.data, ...checkedTasks, ...todaysTask];
                     const uniqueTask = combinedTasks.filter((obj, index) => index === combinedTasks.findIndex(o => o.id === obj.id)) 
                     sessionStorage.setItem('todaysTask', JSON.stringify(uniqueTask))
-                    span.end();
                 // }
                 // if(checkedTasks) {
                 //     sessionStorage.setItem('todaysTask', JSON.stringify([...res.data, ...checkedTasks]))
@@ -62,9 +57,6 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const span = tracer.startSpan('frontend timer - create form');
-        span.setAttribute('component', 'TaskForm Component');
-
         if (todo) {
             const newTodo = {
                 ...form,
@@ -83,11 +75,9 @@ const TaskForm = ({ form, setForm, isUpdate, setIsUpdate }) => {
         // Increment the taskCreatedCounter
         try {
             axios.post(`${metrics_url}`, {timername: 'timer'});
-            span.end();
             return;
         } catch (error) {
             console.error('Error incrementing task counter:', error);
-            span.end();
         }
     }
 

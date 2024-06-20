@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'axios';
 import config from '../../config';
-import { tracer } from '../../utils/Tracer/Trace';
 
 const apiUrl = config.apiUrl;
 
@@ -16,9 +15,6 @@ const FooterForm = () => {
 
     const handleFooterSubmit = async (e) => {
         e.preventDefault();
-        const span = tracer.startSpan('frontend timer - footer form');
-        span.setAttribute('component', 'TFooter Component');
-
         const sent = await axios.post(`${apiUrl}/subscribe`, subscribeEmail)
         alert(sent.data)
         const mailBody = {
@@ -42,7 +38,6 @@ const FooterForm = () => {
         const result = await axios.post(`${apiUrl}/send-mail`, mailBody)
         alert(result.data)
         setSubscribeEmail(null)
-        span.end();
 }
 
 return (

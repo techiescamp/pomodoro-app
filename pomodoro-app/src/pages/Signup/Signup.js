@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import config from '../../config';
-//
-import { tracer } from '../../utils/Tracer/Trace';
 
 const apiUrl = config.apiUrl;
 
@@ -24,9 +22,6 @@ const Signup = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const span = tracer.startSpan('frontend signup');
-        span.setAttribute('component', 'Signup Component');
-
         const cid = `pomo-${Math.ceil(Math.random()*200)}`;
         fetch(`${apiUrl}/user/signup`, {
             method: 'POST',
@@ -39,7 +34,6 @@ const Signup = () => {
         .then(res => res.json())
         .then(data => {
             setStatus(data);
-            span.end();
             if(data.success === true) {
                 sessionStorage.setItem('xCorrId', data.xCorrId)
                 navigate("/login")

@@ -3,11 +3,10 @@ const logFormat = (req, res) => {
         host: req.headers.host,
         method: req.method,
         url: req.url,
-        'x-corr-id': req.correlationId,
-        userId: res.userId,
-        emailId: res.emailId,
-        statusCode: res.statusCode,
-        responseTime: res.responsetime,
+        'x-corr-id': req.body.xCorrId,
+        userId: res && res.userId,
+        emailId: res && res.emailId,
+        statusCode: res && res.statusCode,
         ipAddress: req.ip,
     }
 }

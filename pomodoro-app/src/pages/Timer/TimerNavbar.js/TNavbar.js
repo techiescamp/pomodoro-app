@@ -6,9 +6,8 @@ import TList from './TList';
 import TReport from './TReport';
 import { UserContext } from '../../../App';
 import { MyContext } from '../Timer';
-import { tracer } from '../../../utils/Tracer/Trace';
 
-const apiUrl = config.apiUrl;
+const reportsUrl = config.reportsUrl;
 
 const TNavbar = () => {
     // context
@@ -26,17 +25,13 @@ const TNavbar = () => {
 
     useEffect(() => {
         if (user) {
-            const span = tracer.startSpan('frontend timer - show reports');
-            span.setAttribute('component', 'TNavbar Component');
-
-            axios.post(`${apiUrl}/tasks`, user, {
+            axios.post(`${reportsUrl}/tasks`, user, {
                 headers: {
                     'x-correlation-id': xCorrId
                 }
             })
             .then(res => {
                 setList(res.data)
-                span.end();
             })
         }
     },[user, count])
