@@ -3,15 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import config from '../../config';
 import { UserContext } from '../../App';
-//
-import { tracer } from '../../utils/Tracer/Trace';
 
 const apiUrl = config.apiUrl;
 
 const Login = () => {
     const { xCorrId, setLoginType } = useContext(UserContext)
     const navigate = useNavigate();
-    // const xCorrId = sessionStorage.getItem('xCorrId') || null;
 
     const [status, setStatus] = useState(false);
     const [userLogin, setUserLogin] = useState({
@@ -28,9 +25,6 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const span = tracer.startSpan('frontend login');
-        span.setAttribute('component', 'Login Component');
-
         const cid = xCorrId || `pomo-${Math.ceil(Math.random()*1000)}`;
         axios.post(`${apiUrl}/user/login`, userLogin, {
             headers: {
@@ -47,7 +41,6 @@ const Login = () => {
             .then(res => {
                 setStatus(res.data)
                 sessionStorage.setItem('userInfo', JSON.stringify(res.data))
-                span.end();
                 navigate('/')
             })
         })
@@ -56,7 +49,6 @@ const Login = () => {
             if(err.code === 'ERR_NETWORK') {
                 setStatus(err.message);
             }
-            span.end();
         })
         setUserLogin({
             email: '',

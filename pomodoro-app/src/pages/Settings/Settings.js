@@ -2,7 +2,6 @@ import React, { useContext, useState, useEffect } from 'react';
 import './settings.css'
 import { UserContext } from '../../App';
 import config from '../../config';
-import { tracer } from '../../utils/Tracer/Trace';
 
 const apiUrl = config.apiUrl
 
@@ -30,8 +29,6 @@ const Settings = () => {
 
     const handleForm = async (e) => {
         e.preventDefault();
-        const span = tracer.startSpan('frontend timer - update user profile');
-        span.setAttribute('component', 'Settings Component');
 
         if(profile.password !== '') {
             alert("Are you sure to change to new password ?")
@@ -60,7 +57,6 @@ const Settings = () => {
             }));
         })
         closeBtn();
-        span.end();
     }
 
     const handleTimer = (e) => {

@@ -1,6 +1,7 @@
 const express = require('express');
 const config = require('./config');
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
+const TaskTracker = require('./model');
 const cors = require('cors');
 const responseTime = require('response-time');
 const client = require('prom-client');
@@ -8,6 +9,7 @@ const metrics = require('./Observability/metrics');
 const logger =require('./Observability/logger');
 const logFormat = require('./Observability/logFormat');
 const { tracer } = require('./Observability/trace');
+const { log } = require('winston');
 const port = config.server.port;
 
 const app = express();
@@ -17,13 +19,8 @@ app.use(cors());
 
 // connect to database
 const mongoUrl = config.database.mongoUrl;
-let db;
-const connectToDb = async () => {
-    const client = new MongoClient(mongoUrl);
-    await client.connect();
-    db = client.db('Pomodoro');
-    logger.info('Mongodb connected');
-};
+const db = mongoose.connect(mongoUrl);
+
 
 // http response time for each routes
 app.use(
@@ -59,7 +56,6 @@ const collectDefaultMetrics = client.collectDefaultMetrics;
 let reg = metrics.register
 collectDefaultMetrics({ reg });
 
-
 // Expose the metrics endpoint
 app.get('/metrics', async (req, res) => {
     res.set('Content-Type', metrics.register.contentType);
@@ -71,19 +67,19 @@ app.post('/tasks', async (req, res) => {
     const span = tracer.startSpan('User task list', {
         attributes: { 'x-correlation-id': req.correlationId }
     });
-    metrics.httpRequestCounter.inc()
+    metrics.httpRequestCounter.inc();
     
     try {
         const queryStartTime = process.hrtime();
-        const existingUser = await db.collection('task_trackers').findOne({ "userData.email": req.body.email });
+        const existingUser = await TaskTracker.findOne({ "userData.email": req.body.email });
         //
         const queryEndTime = process.hrtime(queryStartTime);
         const queryDuration = queryEndTime[0] * 1e9 + queryEndTime[1];
         metrics.databaseQueryDurationHistogram.observe({operation: 'Task list - findOne', success: existingUser ? 'true': 'false'}, queryDuration / 1e9);
         
         const logResult = {
-            userId: req.body.useId,
-            emailId: req.body.email,
+            userId: req.body? req.body.userId : null,
+            emailId: req.body? req.body.email : null,
             statusCode: res.statusCode,
         }
         if(existingUser) {
@@ -96,7 +92,7 @@ app.post('/tasks', async (req, res) => {
             metrics.errorCounter.inc()
             logger.error('Wrong email-id. Please log again', logFormat(req, req.body.email))
             span.end();
-            return res.send(400).send('User not found :(');
+            // return res.send(400).send('User not found :(');
         }
     }
     catch (err) {
@@ -110,13 +106,12 @@ app.post('/tasks', async (req, res) => {
 
 app.listen(port, async (err, server) => {
     if(err) return console.log('server is not running');
-    logger.info(`server is running at port: 7070`);
-    try {
-        await connectToDb();
+    logger.info(`server is running at port: ${port}`);
+    if(db) {
+        logger.info(`Mongodb is connected on server port: ${port}`)
     }
-    catch(err) {
-        logger.error(err);
+   else{
+        logger.error('Error: connecting mongodb!!!');
         process.exit(1); // exit the process if mongodb connection fails
     }
-   
 });

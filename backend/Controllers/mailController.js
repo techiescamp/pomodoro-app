@@ -4,7 +4,7 @@ const Subscribers = require('../Model/subscriberModel');
 const logger = require('../Logger/logger');
 const logFormat = require('../Logger/logFormat');
 const metrics = require('../Observability/metrics');
-const { tracer } = require('../Observability/jaegerTrace');
+const { tracer} = require('../Observability/jaegerTrace');
 
 const subscribe = async (req, res) => {
     const span = tracer.startSpan('Subscription', {

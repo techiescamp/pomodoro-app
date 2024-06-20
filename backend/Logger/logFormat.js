@@ -7,7 +7,6 @@ const logFormat = (req, res) => {
         userId: res.userId,
         emailId: res.emailId,
         statusCode: res.statusCode,
-        responseTime: res.responsetime,
         ipAddress: req.ip,
     }
 }

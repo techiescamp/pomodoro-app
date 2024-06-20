@@ -32,7 +32,7 @@ const checkTodayTasks = async (req, res) => {
 }
 
 const createTask = async (req, res) => {
-    metrics.httpRequestCounter.inc()
+    metrics.httpRequestCounter.inc();
     const span = tracer.startSpan('create new task', {
         attributes: { 'x-correlation-id': req.correlationId }
     });

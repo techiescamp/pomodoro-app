@@ -10,7 +10,6 @@ import Footer from './components/Footer/Footer';
 import React, { createContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import config from './config';
-import { tracer } from './utils/Tracer/Trace';
 
 export const UserContext = createContext();
 const apiUrl = config.apiUrl;
@@ -38,9 +37,6 @@ function App() {
   },[user, loginType])
 
   function fetchGoogleUser() {
-    const span = tracer.startSpan('frontend timer - login to google');
-    span.setAttribute('component', 'App Component');
-
     axios.get(`${apiUrl}/auth/login/success`, {
       withCredentials: 'include',
       headers: {
@@ -52,7 +48,6 @@ function App() {
     .then(response => {
       sessionStorage.setItem('guser', JSON.stringify(response.data.user))
       setXCorrId(sessionStorage.getItem('xCorrId'));
-      span.end();
       return setUser(response.data.user)
     })
   }

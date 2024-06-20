@@ -12,7 +12,6 @@ const responseTime = require('response-time');
 const correlationIdMiddleware = require('./middlewares/correlationid');
 const client = require('prom-client');
 const metrics = require('./Observability/metrics');
-const { createProxyMiddleware } = require('http-proxy-middleware');
 
 // health check variable
 let isDatabaseReady = false;
@@ -127,24 +126,6 @@ app.post("/metrics", (req, res) => {
   }
   return res.status(200).send('client metrics recorded');
 });
-
-app.use('/traces', createProxyMiddleware({
-  target: 'http://54.190.77.113:30231/api/traces',
-  changeOrigin: true,
-  pathRewrite: {
-    '^/traces': '', // Remove the /traces prefix when forwarding to the target
-  },
-  onProxyReq: (proxyReq, req, res) => {
-    console.log(`Proxying request to: ${proxyReq.path}`);
-  },
-  onProxyRes: (proxyRes, req, res) => {
-    console.log(`Response received for: ${req.url}`);
-  },
-  onError: (err, req, res) => {
-    console.log('Error in proxying request', err);
-    res.status(500).send('Proxy error');
-  }
-}));
 
 
 // handlers or routes

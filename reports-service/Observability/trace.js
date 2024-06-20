@@ -29,7 +29,7 @@ const provider = new NodeTracerProvider({
     }),
 })
 
-// add jaeger-exporter to spna processor
+// add jaeger-exporter to span processor
 // provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
 provider.addSpanProcessor(new BatchSpanProcessor(exporter));
 
